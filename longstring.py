@@ -21,7 +21,10 @@ def rle(message):
 def rle_string(x):
     rle_list = rle(x)
     longstr = max(rle_list, key=len)
-    avgstr = mean(rle_list, key=len)
+    total_len = 0
+    for i in rle_list:
+        total_len += len(i)
+    avgstr = float(total_len) / float(len(rle_list))
     return zip(longstr, avgstr)
 
 def longstring(x, avg=False):
@@ -35,7 +38,7 @@ def longstring(x, avg=False):
 
     output = rle_string(x)
 
-    if avg == TRUE:
-        return(output[0])
+    if avg:
+        return list(output)[1]
     else:
-        return output[]
+        return list(output)[0]
