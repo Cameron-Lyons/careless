@@ -30,8 +30,7 @@ def mahad(x, plot=True, flag=False, confidence=0.99, drop_na=True):
     if flag:
         cut = chi2.ppf(confidence, len(maha_data))
         flagged = (maha_data_merge > cut)
-        return pd.DataFrame(maha_data_merge, flagged)
+        return zip(maha_data_merge, flagged)
     
     else:
         return maha_data_merge
-    
