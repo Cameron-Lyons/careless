@@ -21,9 +21,7 @@ def rle(message):
 def rle_string(x):
     rle_list = rle(x)
     longstr = max(rle_list, key=len)
-    total_len = 0
-    for i in rle_list:
-        total_len += len(i)
+    total_len = sum(len(s) for s in rle_list)
     avgstr = float(total_len) / float(len(rle_list))
     return zip(longstr, avgstr)
 
