@@ -1,22 +1,11 @@
 ''' Identifies the longest string of identical consecutive responses for each observation '''
 
-def rle(message): 
-    encoded_message = "" 
-    i = 0
-   
-    while (i <= len(message)-1): 
-        count = 1
-        ch = message[i] 
-        j = i 
-        while (j < len(message)-1): 
-            if (message[j] == message[j+1]): 
-                count = count+1
-                j = j+1
-            else: 
-                break
-        encoded_message=encoded_message+str(count)+ch 
-        i = j+1
-    return encoded_message 
+from itertools import groupby
+
+def rle(message):
+    '''Run-length encoding. Converts a string into a list of tuples, where each tuple contains the length of the run and the character.'''
+    return [f"{x}{sum(1 for _ in y)}" for x, y in groupby(message)]
+
 
 def rle_string(x):
     rle_list = rle(x)
