@@ -21,16 +21,21 @@ def avgstr_message(message):
     return avgstr
 
 
-def longstring(x, avg=False):
+def longstring(messages, avg=False):
     '''Takes a matrix of item responses and, beginning with the second column (i.e., second item)
     compares each column with the previous one to check for matching responses.
     For each observation, the length of the maximum uninterrupted string of
     identical responses is returned. Additionally, can return the average length of uninterrupted string of identical responses.
 
-    x a matrix of data (e.g. item responses)
+    messages a matrix of data (e.g. item responses)
     avg logical indicating whether to additionally return the average length of identical consecutive responses'''
 
     if avg:
-        return [avgstr_message(message) for message in x]
+        if isinstance(messages, str):
+            return avgstr_message(messages)
+        else:
+            return [avgstr_message(message) for message in messages]
     else:
-        return [longstr_message(message) for message in x]
+        if isinstance(messages, str):
+            return longstr_message(messages)
+        return [longstr_message(message) for message in messages]
