@@ -1,4 +1,4 @@
-''' Identifies the longest string of identical consecutive responses for each observation '''
+''' Identifies the longest string or average length of identical consecutive responses for each observation '''
 
 from itertools import groupby
 
@@ -22,17 +22,17 @@ def avgstr_message(message):
 
 
 def longstring(messages, avg=False):
-    '''Takes a matrix of item responses and, beginning with the second column (i.e., second item)
-    compares each column with the previous one to check for matching responses.
-    For each observation, the length of the maximum uninterrupted string of
+    '''Takes a string or list of strings 
+    For each string, the length of the maximum uninterrupted string of
     identical responses is returned. Additionally, can return the average length of uninterrupted string of identical responses.
 
-    messages a matrix of data (e.g. item responses)
-    avg logical indicating whether to additionally return the average length of identical consecutive responses'''
-
+    messages string or list of strings
+    avg bool if false, return longest string of identical responses for each observation
+        if true, return average length of uninterrupted string of identical responses for each observation
+    '''
     if avg:
         if isinstance(messages, str):
-            return avgstr_message(messages)
+            return avgstr_message(messages) 
         else:
             return [avgstr_message(message) for message in messages]
     else:
