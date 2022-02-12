@@ -4,7 +4,7 @@ from itertools import groupby
 
 def rle(message):
     '''Run-length encoding. Converts a string into a list of tuples, where each tuple contains the length of the run and the character.'''
-    return [f"{x}{sum(1 for _ in y)}" for x, y in groupby(message)]
+    return [(x, sum(1 for _ in y)) for x, y in groupby(message)]
 
 
 def rle_string(x):
