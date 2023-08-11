@@ -39,7 +39,8 @@ def psychsyn(
 
     # Calculate the within-person correlation for these item pairs
     scores = []
-    diag_values = []
+    if diag:
+        diag_values = []
 
     for person_responses in x:
         person_corrs = []
