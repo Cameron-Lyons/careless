@@ -25,3 +25,8 @@ def compute_mahalanobis(data: np.ndarray) -> List[float]:
         mahalanobis(data[i, :], mean, inv_cov_matrix) for i in range(data.shape[0])
     ]
     return distances
+
+
+def flag_outliers(distances: List[float], threshold: float = 2.5) -> List[int]:
+    """Flag values that exceed the threshold"""
+    return [1 if d > threshold else 0 for d in distances]
