@@ -1,6 +1,6 @@
 """ Identifies the longest string or average length of identical consecutive responses for each observation """
 
-from itertools import groupby, chain
+from itertools import groupby
 from typing import List, Tuple
 
 
