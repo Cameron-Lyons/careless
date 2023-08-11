@@ -3,7 +3,7 @@
 from itertools import groupby, chain
 
 
-def run_length_encoding(message: str) -> str:
+def run_length_encode(message: str) -> str:
     """Run-length encoding. Converts a string into a list of tuples, where each tuple contains the length of the run and the character."""
     return "".join(f"{char}{len(list(group))}" for char, group in groupby(message))
 
@@ -32,10 +32,13 @@ def run_length_decode(encoded_data: str) -> str:
     return "".join(decoded)
 
 
-def longstr_message(message):
-    """return longest sequence of repeated characters in a string"""
-    rle_list = rle(message)
-    return max(rle_list, key=lambda x: x[1])
+def longest_sequence(message: str) -> str:
+    """Return the longest sequence of identical characters in a string"""
+    encoded = run_length_encode(message)
+    if not encoded:
+        return None
+    sorted_encoded = sorted(encoded, key=lambda x: x[1], reverse=True)
+    return sorted_encoded[0]
 
 
 def avgstr_message(message):
