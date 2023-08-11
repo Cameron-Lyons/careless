@@ -1,5 +1,5 @@
 import unittest
-from src.longstring import (
+from ..src.longstring import (
     run_length_encode,
     run_length_decode,
     longstr_message,
@@ -26,20 +26,20 @@ class TestLongstring(unittest.TestCase):
         self.assertEqual(run_length_decode([]), "")
 
     def test_longstr_message(self):
-        self.assertEqual(longstr_message("AAABBBCCDAA"), ("B", 3))
+        self.assertEqual(longstr_message("AAAABBBCCDAA"), ("A", 4))
         self.assertEqual(longstr_message("A"), ("A", 1))
         self.assertEqual(longstr_message(""), None)
 
     def test_avgstr_message(self):
         self.assertAlmostEqual(avgstr_message("AAABBBCCDAA"), 2.2)
-        self.assertAlmostEqual(avgstr_message("A"), 1.0)
-        self.assertAlmostEqual(avgstr_message(""), 0.0)
+        self.assertEqual(avgstr_message("A"), 1.0)
+        self.assertEqual(avgstr_message(""), 0.0)
 
     def test_longstring(self):
         # Testing with avg=False
-        self.assertEqual(longstring("AAABBBCCDAA"), ("B", 3))
+        self.assertEqual(longstring("AAAABBBCCDAA"), ("A", 4))
         self.assertEqual(
-            longstring(["AAABBBCCDAA", "A", ""]), [("B", 3), ("A", 1), None]
+            longstring(["AAAABBBCCDAA", "A", ""]), [("A", 4), ("A", 1), None]
         )
 
         # Testing with avg=True

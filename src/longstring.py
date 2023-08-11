@@ -24,6 +24,8 @@ def longstr_message(message: str) -> str:
 
 def avgstr_message(message: str) -> float:
     """return average length of uninterrupted string of identical characters in a string"""
+    if not message:
+        return 0.0
     rle_list = run_length_encode(message)
     total_len = sum(s[1] for s in rle_list)
     avgstr = float(total_len) / float(len(rle_list))
