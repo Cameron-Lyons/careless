@@ -13,27 +13,42 @@ correlations of the data set.
 """
 
 import numpy as np
-from typing import List
+import scipy.stats as stats
+from typing import Tuple, Union
 
 
-def mahalanobis(x: np.ndarray, mean: np.ndarray, inv_cov_matrix: np.ndarray) -> float:
-    """Compute the Mahalanobis Distance"""
-    x_minus_mean = x - mean
-    return np.sqrt(x_minus_mean.T.dot(inv_cov_matrix).dot(x_minus_mean))
+def mahad(
+    x: np.ndarray,
+    flag: bool = False,
+    confidence: float = 0.95,
+    na_rm: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    """
+    Computes Mahalanobis Distance for a matrix of data.
 
+    Parameters:
+    - x: Matrix of data.
+    - flag: If True, flags potential outliers based on the confidence level.
+    - confidence: Confidence level for flagging outliers.
+    - na_rm: If True, removes rows with missing data.
 
-def compute_mahalanobis(data: np.ndarray) -> List[float]:
-    """Computes Mahalanobis Distance for a dataset"""
-    mean = np.mean(data, axis=0)
-    cov_matrix = np.cov(data, rowvar=False)
+    Returns:
+    - Mahalanobis distances or a tuple of distances and outlier flags.
+    """
+
+    if na_rm:
+        x = x[~np.isnan(x).any(axis=1)]
+
+    mean_vector = np.mean(x, axis=0)
+    cov_matrix = np.cov(x, rowvar=False)
     inv_cov_matrix = np.linalg.inv(cov_matrix)
 
-    distances = [
-        mahalanobis(data[i, :], mean, inv_cov_matrix) for i in range(data.shape[0])
-    ]
+    centered_data = x - mean_vector
+    distances = np.sqrt(np.sum(centered_data @ inv_cov_matrix * centered_data, axis=1))
+
+    if flag:
+        threshold = stats.chi2.ppf(confidence, df=x.shape[1])
+        flags = distances**2 > threshold
+        return distances, flags
+
     return distances
-
-
-def flag_outliers(distances: List[float], threshold: float = 2.5) -> List[int]:
-    """Flag values that exceed the threshold"""
-    return [1 if d > threshold else 0 for d in distances]
