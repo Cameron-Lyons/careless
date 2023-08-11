@@ -1,38 +1,19 @@
 """ Identifies the longest string or average length of identical consecutive responses for each observation """
 
 from itertools import groupby, chain
+from typing import List, Tuple
 
 
-def run_length_encode(message: str) -> str:
+def run_length_encode(message: str) -> List[Tuple[str, int]]:
     """Run-length encoding. Converts a string into a list of tuples, where each tuple contains the length of the run and the character."""
-    return "".join(f"{char}{len(list(group))}" for char, group in groupby(message))
+    return [(char, len(list(group))) for char, group in groupby(message)]
 
 
-def run_length_decode(encoded_data: str) -> str:
-    decoded = []
-    char_iter = iter(encoded_data)
-
-    while char_iter:
-        char = next(char_iter, None)
-        if char is None:
-            break
-        count_str = ""
-        while True:
-            count_char = next(char_iter, None)
-            if count_char is None or not count_char.isdigit():
-                if count_char is not None:
-                    char_iter = chain([count_char], char_iter)
-                break
-
-            count_str += count_char
-
-        count = int(count_str)
-        decoded.append(char * count)
-
-    return "".join(decoded)
+def run_length_decode(encoded_data: List[Tuple[str, int]]) -> str:
+    return "".join([char * count for char, count in encoded_data])
 
 
-def longest_sequence(message: str) -> str:
+def longstr_message(message: str) -> str:
     """Return the longest sequence of identical characters in a string"""
     encoded = run_length_encode(message)
     if not encoded:
@@ -49,7 +30,7 @@ def avgstr_message(message: str) -> float:
     return avgstr
 
 
-def longstring(messages, avg=False):
+def longstring(messages: str | List[str], avg=False) -> str | List[str]:
     """Takes a string or list of strings
     For each string, the length of the maximum uninterrupted string of
     identical responses is returned. Additionally, can return the average length of uninterrupted string of identical responses.
