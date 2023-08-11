@@ -37,34 +37,33 @@ def psychsyn(
     else:
         item_pairs = np.argwhere(np.tril(item_correlations, -1) >= critval)
 
-    # Calculate the within-person correlation for these item pairs
-    scores = []
-    if diag:
-        diag_values = []
+    # Vectorized extraction of item pairs for all persons
+    response_i = x[:, item_pairs[:, 0]]
+    response_j = x[:, item_pairs[:, 1]]
 
-    for person_responses in x:
-        person_corrs = []
+    # Compute correlations across people for each item pair
+    person_corrs = (
+        (response_i - response_i.mean(axis=1, keepdims=True))
+        * (response_j - response_j.mean(axis=1, keepdims=True))
+    ) / (response_i.std(axis=1, keepdims=True) * response_j.std(axis=1, keepdims=True))
 
-        for i, j in item_pairs:
-            response_i = person_responses[i]
-            response_j = person_responses[j]
+    # Find where either of the responses is nan
+    invalid_pairs = np.isnan(response_i) | np.isnan(response_j)
+    person_corrs[invalid_pairs] = np.nan
 
-            if not np.isnan(response_i) and not np.isnan(response_j):
-                person_corrs.append(np.corrcoef(response_i, response_j)[0, 1])
+    if resample_na:
+        nan_corrs = np.isnan(person_corrs.mean(axis=1))
+        person_corrs[nan_corrs] = np.random.choice(
+            [-1, 1], size=nan_corrs.sum()
+        ) * np.abs(person_corrs[nan_corrs])
 
-        if resample_na and np.isnan(np.mean(person_corrs)):
-            person_corrs = [
-                np.random.choice([-1, 1]) * np.abs(val) for val in person_corrs
-            ]
-
-        scores.append(np.nanmean(person_corrs))
-        if diag:
-            diag_values.append(len(person_corrs))
+    scores = np.nanmean(person_corrs, axis=1)
 
     if diag:
-        return np.array(scores), np.array(diag_values)
+        diag_values = np.sum(~np.isnan(person_corrs), axis=1)
+        return scores, diag_values
     else:
-        return np.array(scores)
+        return scores
 
 
 def psychsyn_critval(
