@@ -1,11 +1,34 @@
 """ Identifies the longest string or average length of identical consecutive responses for each observation """
 
-from itertools import groupby
+from itertools import groupby, chain
 
 
 def run_length_encoding(message: str) -> str:
     """Run-length encoding. Converts a string into a list of tuples, where each tuple contains the length of the run and the character."""
     return "".join(f"{char}{len(list(group))}" for char, group in groupby(message))
+
+
+def run_length_decode(encoded_data: str) -> str:
+    decoded = []
+    char_iter = iter(encoded_data)
+
+    while True:
+        try:
+            char = next(char_iter)
+            count_str = ""
+            while True:
+                count_char = next(char_iter)
+                if count_char.isdigit():
+                    count_str += count_char
+                else:
+                    char_iter = chain([count_char], char_iter)
+                    break
+            count = int(count_str)
+            decoded.append(char * count)
+        except StopIteration:
+            break
+
+    return "".join(decoded)
 
 
 def longstr_message(message):
