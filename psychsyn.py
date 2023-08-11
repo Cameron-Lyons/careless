@@ -66,10 +66,6 @@ def psychsyn(
         return np.array(scores)
 
 
-import numpy as np
-from typing import List, Union, Tuple
-
-
 def psychsyn_critval(
     x: Union[List[List[float]], np.ndarray], anto: bool = False
 ) -> List[Tuple[int, int, float]]:
@@ -98,3 +94,20 @@ def psychsyn_critval(
         correlation_list = sorted(correlation_list, key=lambda x: -x[2])
 
     return correlation_list
+
+
+def psychant(
+    x: Union[List[List[float]], np.ndarray], critval: float = -0.60, diag: bool = False
+) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    """
+    Calculate the psychometric antonym score.
+
+    Parameters:
+    - x: A matrix of data where rows are individuals and columns are their item responses.
+    - critval: Minimum magnitude of correlation for items to be considered antonyms.
+    - diag: Boolean to optionally return the number of item pairs available for each observation.
+
+    Returns:
+    - A numpy array of psychometric antonym scores or a tuple of scores and diagnostic values.
+    """
+    return psychsyn(x, critval=critval, anto=True, diag=diag)
