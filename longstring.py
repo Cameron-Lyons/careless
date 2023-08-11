@@ -41,9 +41,9 @@ def longest_sequence(message: str) -> str:
     return sorted_encoded[0]
 
 
-def avgstr_message(message):
+def avgstr_message(message: str) -> float:
     """return average length of uninterrupted string of identical characters in a string"""
-    rle_list = rle(message)
+    rle_list = run_length_encode(message)
     total_len = sum(s[1] for s in rle_list)
     avgstr = float(total_len) / float(len(rle_list))
     return avgstr
