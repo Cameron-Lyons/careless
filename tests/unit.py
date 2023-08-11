@@ -1,4 +1,5 @@
 import unittest
+import numpy as np
 from ..src.longstring import (
     run_length_encode,
     run_length_decode,
@@ -6,6 +7,7 @@ from ..src.longstring import (
     avgstr_message,
     longstring,
 )
+from ..src.irv import irv
 
 
 class TestLongstring(unittest.TestCase):
@@ -47,6 +49,32 @@ class TestLongstring(unittest.TestCase):
         self.assertAlmostEqual(
             longstring(["AAABBBCCDAA", "A", ""], avg=True), [2.2, 1.0, 0.0]
         )
+
+
+class TestIRV(unittest.TestCase):
+    def test_basic_irv(self):
+        x = np.array([[1, 2, 3, 4], [2, 4, 6, 8], [1, 3, 5, 7]])
+        result = irv(x)
+        expected = np.array([1.11803399, 2.23606798, 2.23606798])
+        np.testing.assert_almost_equal(result, expected)
+
+    def test_irv_with_na(self):
+        x = np.array([[1, np.nan, 3, 4], [2, 4, 6, 8], [np.nan, 3, 5, 7]])
+        result = irv(x, na_rm=True)
+        expected = np.array([1.11803399, 2.23606798, 2.081666])
+        np.testing.assert_almost_equal(result, expected)
+
+    def test_irv_with_split(self):
+        x = np.array([[1, 2, 3, 4], [2, 4, 6, 8], [1, 3, 5, 7]])
+        result = irv(x, split=True, num_split=2)
+        expected = np.array([1.11803399, 2.23606798, 2.23606798])
+        np.testing.assert_almost_equal(result, expected)
+
+    def test_irv_with_split_and_na(self):
+        x = np.array([[1, 2, np.nan, 4], [2, 4, 6, 8], [1, 3, np.nan, 7]])
+        result = irv(x, na_rm=True, split=True, num_split=2)
+        expected = np.array([1.11803399, 2.23606798, 2.081666])
+        np.testing.assert_almost_equal(result, expected)
 
 
 if __name__ == "__main__":
