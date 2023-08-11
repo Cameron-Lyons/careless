@@ -12,10 +12,10 @@ from typing import List, Union, Optional
 
 
 def irv(
-    x: Union[List[List[float]], np.ndarray],
+    x: np.ndarray,
     na_rm: bool = True,
     split: bool = False,
-    num_split: Optional[int] = 1,
+    num_split: int = 1,
 ) -> np.ndarray:
     """
     Calculate intra-individual response variability (IRV) for each individual.
