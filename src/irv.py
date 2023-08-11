@@ -28,18 +28,21 @@ def irv(
     Returns:
     - A numpy array of IRV values for each individual.
     """
-
-    if na_rm:
-        x = np.nan_to_num(x, nan=np.mean(x, axis=1, keepdims=True))
-
-    irvs = np.std(x, axis=1)
-
     if split:
         chunk_size = x.shape[1] // num_split
-        irvs_splits = [
-            np.std(x[:, i : i + chunk_size], axis=1)
-            for i in range(0, x.shape[1], chunk_size)
-        ]
-        irvs = np.mean(irvs_splits, axis=0)
+        if na_rm:
+            irvs_splits = [
+                np.nanstd(x[:, i : i + chunk_size], axis=1)
+                for i in range(0, x.shape[1], chunk_size)
+            ]
+        else:
+            irvs_splits = [
+                np.std(x[:, i : i + chunk_size], axis=1)
+                for i in range(0, x.shape[1], chunk_size)
+            ]
+        return np.mean(irvs_splits, axis=0)
 
-    return irvs
+    if na_rm:
+        return np.nanstd(x, axis=1)
+
+    return np.std(x, axis=1)
