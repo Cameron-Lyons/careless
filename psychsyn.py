@@ -64,3 +64,37 @@ def psychsyn(
         return np.array(scores), np.array(diag_values)
     else:
         return np.array(scores)
+
+
+import numpy as np
+from typing import List, Union, Tuple
+
+
+def psychsyn_critval(
+    x: Union[List[List[float]], np.ndarray], anto: bool = False
+) -> List[Tuple[int, int, float]]:
+    """
+    Calculate and order pairwise correlations for all items in the provided item response matrix.
+
+    Parameters:
+    - x: A matrix of data where rows are individuals and columns are their item responses.
+    - anto: Boolean indicating whether to order correlations by largest negative values.
+
+    Returns:
+    - A list of tuples containing item pairs and their correlation, ordered by magnitude.
+    """
+
+    item_correlations = np.corrcoef(x, rowvar=False)
+
+    correlation_list = [
+        (i, j, item_correlations[i, j])
+        for i in range(item_correlations.shape[0])
+        for j in range(i + 1, item_correlations.shape[1])
+    ]
+
+    if anto:
+        correlation_list = sorted(correlation_list, key=lambda x: x[2])
+    else:
+        correlation_list = sorted(correlation_list, key=lambda x: -x[2])
+
+    return correlation_list
