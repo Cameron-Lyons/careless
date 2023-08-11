@@ -8,7 +8,6 @@ scores as outliers - reflecting straightlining responses, Marjanovic et al. (201
 persons with high IRV scores - reflecting highly random responses
 """
 import numpy as np
-from typing import List, Union, Optional
 
 
 def irv(
