@@ -1,7 +1,7 @@
 """
 Takes a matrix of item responses and identifies item pairs that are highly correlated within the
 overall dataset. What defines "highly correlated" is set by the critical value (e.g., r > .60). Each
-respondents’ psychometric synonym score is then computed as the within-person correlation be-
+respondents' psychometric synonym score is then computed as the within-person correlation be-
 tween the identified item-pairs. Alternatively computes the psychometric antonym score which is a
 variant that uses item pairs that are highly negatively correlated
 """
