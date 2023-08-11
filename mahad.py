@@ -5,8 +5,7 @@ vector of binary outlier flags.
 Mahalanobis distance is calculated using a function which supports missing values."""
 
 import numpy as np
-from scipy.spatial import distance
-from typing import List, Tuple
+from typing import List
 
 
 def mahalanobis(x: np.ndarray, mean: np.ndarray, inv_cov_matrix: np.ndarray) -> float:
