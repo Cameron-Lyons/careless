@@ -12,21 +12,22 @@ def run_length_decode(encoded_data: str) -> str:
     decoded = []
     char_iter = iter(encoded_data)
 
-    while True:
-        try:
-            char = next(char_iter)
-            count_str = ""
-            while True:
-                count_char = next(char_iter)
-                if count_char.isdigit():
-                    count_str += count_char
-                else:
-                    char_iter = chain([count_char], char_iter)
-                    break
-            count = int(count_str)
-            decoded.append(char * count)
-        except StopIteration:
+    while char_iter:
+        char = next(char_iter, None)
+        if char is None:
             break
+        count_str = ""
+        while True:
+            count_char = next(char_iter, None)
+            if count_char is None or not count_char.isdigit():
+                if count_char is not None:
+                    char_iter = chain([count_char], char_iter)
+                break
+
+            count_str += count_char
+
+        count = int(count_str)
+        decoded.append(char * count)
 
     return "".join(decoded)
 
