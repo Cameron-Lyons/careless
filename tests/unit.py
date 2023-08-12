@@ -8,6 +8,7 @@ from ..src.longstring import (
     avgstr_message,
     longstring,
     mahad,
+    evenodd,
 )
 from ..src.irv import irv
 
@@ -115,6 +116,45 @@ class TestMahadFunction(unittest.TestCase):
             mahad(self.data, flag=True, confidence=1.1)
         with self.assertRaises(ValueError):
             mahad(self.data, flag=True, confidence=-0.1)
+
+
+class TestEvenOddFunction(unittest.TestCase):
+    def test_basic_functionality(self):
+        data = np.array([[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7]])
+        factors = [3, 3]
+        scores = evenodd(data, factors)
+        self.assertEqual(len(scores), 2)
+
+    def test_with_missing_data(self):
+        data = np.array([[1, np.nan, 3, 4, np.nan, 6], [2, 3, 4, 5, 6, 7]])
+        factors = [3, 3]
+        scores = evenodd(data, factors)
+        self.assertEqual(len(scores), 2)
+
+    def test_diag_output(self):
+        data = np.array([[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7]])
+        factors = [3, 3]
+        scores, diag_vals = evenodd(data, factors, diag=True)
+        self.assertEqual(len(scores), 2)
+        self.assertEqual(len(diag_vals), 2)
+
+    def test_varying_factors(self):
+        data = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [2, 3, 4, 5, 6, 7, 8, 9]])
+        factors = [4, 4]
+        scores = evenodd(data, factors)
+        self.assertEqual(len(scores), 2)
+
+    def test_all_missing_data(self):
+        data = np.array([[np.nan, np.nan, np.nan, np.nan], [2, 3, 4, 5]])
+        factors = [2, 2]
+        scores = evenodd(data, factors)
+        self.assertTrue(np.isnan(scores[0]))
+
+    def test_empty_data(self):
+        data = np.array([])
+        factors = []
+        scores = evenodd(data, factors)
+        self.assertEqual(len(scores), 0)
 
 
 if __name__ == "__main__":
