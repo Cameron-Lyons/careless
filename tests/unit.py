@@ -11,6 +11,7 @@ from ..src.longstring import (
 from ..src.irv import irv
 from ..src.mahad import mahad
 from ..src.evenodd import evenodd
+from ..src.psychsyn import psychsyn, psychsyn_critval, psychant
 
 
 class TestLongstring(unittest.TestCase):
@@ -155,6 +156,38 @@ class TestEvenOddFunction(unittest.TestCase):
         factors = []
         scores = evenodd(data, factors)
         self.assertEqual(len(scores), 0)
+
+
+class TestPsychometricFunctions(unittest.TestCase):
+    def setUp(self):
+        # A toy dataset
+        self.data = np.array([[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]])
+
+    def test_psychsyn_basic(self):
+        scores = psychsyn(self.data)
+        self.assertEqual(len(scores), self.data.shape[0])
+
+    def test_psychsyn_diag(self):
+        scores, diag_vals = psychsyn(self.data, diag=True)
+        self.assertEqual(len(scores), self.data.shape[0])
+        self.assertEqual(len(diag_vals), self.data.shape[0])
+
+    def test_psychsyn_resample_na(self):
+        self.data[0, 0] = np.nan
+        scores = psychsyn(self.data, resample_na=True)
+        self.assertEqual(len(scores), self.data.shape[0])
+
+    def test_psychsyn_critval(self):
+        results = psychsyn_critval(self.data)
+        self.assertTrue(all(isinstance(t, tuple) and len(t) == 3 for t in results))
+
+    def test_psychsyn_anto(self):
+        scores = psychsyn(self.data, anto=True)
+        self.assertEqual(len(scores), self.data.shape[0])
+
+    def test_psychant(self):
+        scores = psychant(self.data)
+        self.assertEqual(len(scores), self.data.shape[0])
 
 
 if __name__ == "__main__":
