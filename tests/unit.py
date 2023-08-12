@@ -7,10 +7,10 @@ from ..src.longstring import (
     longstr_message,
     avgstr_message,
     longstring,
-    mahad,
-    evenodd,
 )
 from ..src.irv import irv
+from ..src.mahad import mahad
+from ..src.evenodd import evenodd
 
 
 class TestLongstring(unittest.TestCase):
