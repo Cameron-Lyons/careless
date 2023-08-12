@@ -67,7 +67,7 @@ class TestIRV(unittest.TestCase):
     def test_irv_with_split(self):
         x = np.array([[1, 2, 3, 4], [2, 4, 6, 8], [1, 3, 5, 7]])
         result = irv(x, split=True, num_split=2)
-        expected = np.array([1.118034, 2.236068, 2.236068])
+        expected = np.array([0.5, 1.0, 1.0])
         np.testing.assert_almost_equal(result, expected)
 
     def test_irv_with_split_and_na(self):
