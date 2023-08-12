@@ -6,6 +6,7 @@ from ..src.longstring import (
     longstr_message,
     avgstr_message,
     longstring,
+    mahad,
 )
 from ..src.irv import irv
 
@@ -75,6 +76,44 @@ class TestIRV(unittest.TestCase):
         result = irv(x, na_rm=True, split=True, num_split=2)
         expected = np.array([0.25, 1.0, 0.5])
         np.testing.assert_almost_equal(result, expected)
+
+
+class TestMahadFunction(unittest.TestCase):
+    def setUp(self):
+        self.data = np.array([[1, 2, 3], [2, 3, 4], [3, 4, 5], [10, 10, 10]])
+
+    def test_basic_functionality(self):
+        distances = mahad(self.data)
+        self.assertEqual(len(distances), 4)
+        self.assertTrue((distances >= 0).all())
+
+    def test_with_na_rm(self):
+        data_with_na = np.array(
+            [[1, 2, 3], [np.nan, 3, 4], [3, np.nan, 5], [10, 10, 10]]
+        )
+        distances = mahad(data_with_na, na_rm=True)
+        self.assertEqual(len(distances), 2)
+
+    def test_flagging(self):
+        distances, flags = mahad(self.data, flag=True)
+        self.assertEqual(len(flags), 4)
+        self.assertTrue(isinstance(flags[0], np.bool_))
+
+    def test_flagging_with_threshold(self):
+        distances, flags = mahad(self.data, flag=True, confidence=0.99)
+        threshold = stats.chi2.ppf(0.99, df=self.data.shape[1])
+        flagged_distances = distances[flags]
+        self.assertTrue((flagged_distances**2 > threshold).all())
+
+    def test_no_negative_distances(self):
+        distances = mahad(self.data)
+        self.assertTrue((distances >= 0).all())
+
+    def test_invalid_confidence(self):
+        with self.assertRaises(ValueError):
+            mahad(self.data, flag=True, confidence=1.1)
+        with self.assertRaises(ValueError):
+            mahad(self.data, flag=True, confidence=-0.1)
 
 
 if __name__ == "__main__":
