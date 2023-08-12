@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import scipy.stats as stats
 from ..src.longstring import (
     run_length_encode,
     run_length_decode,
@@ -95,7 +96,7 @@ class TestMahadFunction(unittest.TestCase):
         self.assertEqual(len(distances), 2)
 
     def test_flagging(self):
-        distances, flags = mahad(self.data, flag=True)
+        _, flags = mahad(self.data, flag=True)
         self.assertEqual(len(flags), 4)
         self.assertTrue(isinstance(flags[0], np.bool_))
 
