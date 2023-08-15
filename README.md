@@ -1,7 +1,7 @@
 #careless: 
 ##Procedures for Computing Indices of Careless Responding
 
-When taking online surveys, participants sometimes respond to items without regard to their content. These types of responses, referred to as careless or insufficient effort responding, constitute significant problems for data quality, leading to distortions in data analysis and hypothesis testing, such as spurious correlations. The 'R' package 'careless' provides solutions designed to detect such careless / insufficient effort responses by allowing easy calculation of indices proposed in the literature. It currently supports the calculation of longstring, even-odd consistency, psychometric synonyms/antonyms, Mahalanobis distance, and intra-individual response variability (also termed inter-item standard deviation). For a review of these methods, see [Curran (2016)] (https://www.sciencedirect.com/science/article/abs/pii/S0022103115000931?via%3Dihub)
+When taking online surveys, participants sometimes respond to items without regard to their content. These types of responses, referred to as careless or insufficient effort responding, constitute significant problems for data quality, leading to distortions in data analysis and hypothesis testing, such as spurious correlations. The 'R' package 'careless' provides solutions designed to detect such careless / insufficient effort responses by allowing easy calculation of indices proposed in the literature. It currently supports the calculation of longstring, even-odd consistency, psychometric synonyms/antonyms, Mahalanobis distance, and intra-individual response variability (also termed inter-item standard deviation). For a review of these methods, see [Curran (2016)](https://www.sciencedirect.com/science/article/abs/pii/S0022103115000931?via%3Dihub)
 
 ##Description
 Careless or insufficient effort responding in surveys, i.e. responding to items without regard to their
@@ -32,4 +32,4 @@ correlation) for the psychometric synonyms/antonyms index.
 * longstring computes the longest (and optionally, average) length of consecutive identical
 responses given.
 * irv computes the Intra-individual Response Variability (IRV), the "standard deviation of re-
-sponses across a set of consecutive item responses for an individual" (Dunn et al. 2018)
+sponses across a set of consecutive item responses for an individual" [Dunn et al. 2018](https://link.springer.com/article/10.1007/s10869-016-9479-0)
