@@ -31,5 +31,4 @@ correlation) for the psychometric synonyms/antonyms index.
 ## Response pattern functions
 * **longstring** computes the longest (and optionally, average) length of consecutive identical
 responses given.
-* **irv** computes the Intra-individual Response Variability (IRV), the "standard deviation of re-
-sponses across a set of consecutive item responses for an individual" [Dunn et al. 2018](https://link.springer.com/article/10.1007/s10869-016-9479-0)
+* **irv** computes the Intra-individual Response Variability (IRV), the "standard deviation of responses across a set of consecutive item responses for an individual" [Dunn et al. 2018](https://link.springer.com/article/10.1007/s10869-016-9479-0)
