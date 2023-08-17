@@ -14,22 +14,22 @@ Mahalanobis Distance, and Intra-individual Response Variability (also termed Int
 Deviation).
 
 ## Statistical outlier function
-* mahad computes Mahalanobis Distance, which gives the distance of a data point relative to the
+* **mahad** computes Mahalanobis Distance, which gives the distance of a data point relative to the
 center of a multivariate distribution.
-##Consistency indices
-* evenodd computes the Even-Odd Consistency Index. It divides unidimensional scales using
+## Consistency indices
+* **evenodd** computes the Even-Odd Consistency Index. It divides unidimensional scales using
 an even-odd split; two scores, one for the even and one for the odd subscale, are then computed
 as the average response across subscale items. Finally, a within-person correlation is computed
 based on the two sets of subscale scores for each scale.
-* psychsyn computes the Psychometric Synonyms Index, or, alternatively, the Psychometric
+* **psychsyn** computes the Psychometric Synonyms Index, or, alternatively, the Psychometric
 Antonyms Index. Psychometrical synonyms are item pairs which are correlated highly posi-
 tively, whereas psychometric antonyms are item pairs which are correlated highly negatively.
 A within-person correlation is then computed based on these item pairs.
-* psychant is a convenience wrapper for psychsyn that computes psychological antonyms.
-* psychsyn_critval is a helper designed to set an adequate critical value (i.e. magnitude of
+* **psychant** is a convenience wrapper for psychsyn that computes psychological antonyms.
+* **psychsyn_critval** is a helper designed to set an adequate critical value (i.e. magnitude of
 correlation) for the psychometric synonyms/antonyms index.
-##Response pattern functions
-* longstring computes the longest (and optionally, average) length of consecutive identical
+## Response pattern functions
+* **longstring** computes the longest (and optionally, average) length of consecutive identical
 responses given.
-* irv computes the Intra-individual Response Variability (IRV), the "standard deviation of re-
+* **irv** computes the Intra-individual Response Variability (IRV), the "standard deviation of re-
 sponses across a set of consecutive item responses for an individual" [Dunn et al. 2018](https://link.springer.com/article/10.1007/s10869-016-9479-0)
