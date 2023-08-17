@@ -6,10 +6,8 @@ When taking online surveys, participants sometimes respond to items without rega
 
 ## Description
 Careless or insufficient effort responding in surveys, i.e. responding to items without regard to their
-content, is a common occurence in surveys. These types of responses constitute significant prob-
-lems for data quality leading to distortions in data analysis and hypothesis testing, such as spurious
-correlations. The R package careless provides solutions designed to detect such careless / insuffi-
-cient effort responses by allowing easy calculation of indices proposed in the literature. It currently
+content, is a common occurence in surveys. These types of responses constitute significant problems for data quality leading to distortions in data analysis and hypothesis testing, such as spurious
+correlations. The R package careless provides solutions designed to detect such careless / insufficient effort responses by allowing easy calculation of indices proposed in the literature. It currently
 supports the calculation of Longstring, Even-Odd Consistency, Psychometric Synonyms/Antonyms,
 Mahalanobis Distance, and Intra-individual Response Variability (also termed Inter-item Standard
 Deviation).
@@ -23,8 +21,7 @@ an even-odd split; two scores, one for the even and one for the odd subscale, ar
 as the average response across subscale items. Finally, a within-person correlation is computed
 based on the two sets of subscale scores for each scale.
 * **psychsyn** computes the Psychometric Synonyms Index, or, alternatively, the Psychometric
-Antonyms Index. Psychometrical synonyms are item pairs which are correlated highly posi-
-tively, whereas psychometric antonyms are item pairs which are correlated highly negatively.
+Antonyms Index. Psychometrical synonyms are item pairs which are correlated highly positively, whereas psychometric antonyms are item pairs which are correlated highly negatively.
 A within-person correlation is then computed based on these item pairs.
 * **psychant** is a convenience wrapper for psychsyn that computes psychological antonyms.
 * **psychsyn_critval** is a helper designed to set an adequate critical value (i.e. magnitude of
