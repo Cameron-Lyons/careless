@@ -1,3 +1,4 @@
+"""This module contains the evenodd function for calculating even-odd consistency scores."""
 import numpy as np
 from typing import List, Union, Tuple
 
