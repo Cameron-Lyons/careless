@@ -5,6 +5,7 @@ respondents' psychometric synonym score is then computed as the within-person co
 tween the identified item-pairs. Alternatively computes the psychometric antonym score which is a
 variant that uses item pairs that are highly negatively correlated
 """
+
 import numpy as np
 from typing import List, Union, Tuple
 
