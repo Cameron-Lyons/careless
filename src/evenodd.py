@@ -1,9 +1,4 @@
-"""
-Takes a matrix of item responses and a vector of integers representing the length each factor. The
-even-odd consistency score is then computed as the within-person correlation between the even and
-odd subscales over all the factors.
-"""
-
+"""This module contains the evenodd function for calculating even-odd consistency scores."""
 import numpy as np
 from typing import List, Union, Tuple
 
@@ -23,39 +18,34 @@ def evenodd(
     - A numpy array of even-odd consistency scores or a tuple of scores and diagnostic values.
     """
 
-    correlations = []
-    if diag:
-        diag_values = []
+    x = np.array(x)
 
-    for person_responses in x:
-        person_corrs = []
-        start_idx = 0
+    avg_correlations = np.zeros(x.shape[0])
 
-        for factor in factors:
-            even_indices = list(range(start_idx, start_idx + factor, 2))
-            odd_indices = list(range(start_idx + 1, start_idx + factor, 2))
+    diag_vals = np.zeros(x.shape[0], dtype=int)
 
-            even_responses = person_responses[even_indices]
-            odd_responses = person_responses[odd_indices]
+    start_col = 0
+    for factor_size in factors:
+        end_col = start_col + factor_size
 
-            # Handle missing data by creating a mask of non-missing pairs
-            mask = ~np.isnan(even_responses) & ~np.isnan(odd_responses)
-            if diag:
-                diag_values.append(np.sum(mask))
+        even_cols = x[:, start_col:end_col:2]
+        odd_cols = x[:, (start_col + 1) : end_col : 2]
 
-            even_responses = even_responses[mask]
-            odd_responses = odd_responses[mask]
+        correlations = np.array(
+            [np.corrcoef(e, o)[0, 1] for e, o in zip(even_cols, odd_cols)]
+        )
 
-            if len(even_responses) > 0:  # Guard against empty data after masking
-                person_corrs.append(np.corrcoef(even_responses, odd_responses)[0, 1])
+        correlations[np.isnan(correlations)] = 0
 
-            start_idx += factor
+        avg_correlations += correlations
 
-        correlations.append(
-            np.nanmean(person_corrs)
-        )  # Handle potential NaNs in correlations
+        diag_vals += np.minimum(even_cols.shape[1], odd_cols.shape[1])
+
+        start_col = end_col
+
+    avg_correlations /= len(factors)
 
     if diag:
-        return np.array(correlations), np.array(diag_values)
+        return avg_correlations, diag_vals
     else:
-        return np.array(correlations)
+        return avg_correlations
