@@ -10,6 +10,23 @@ import numpy as np
 from typing import List, Union, Tuple
 
 
+def get_highly_correlated_pairs(
+    item_correlations: np.ndarray, critval: float, anto: bool
+) -> np.ndarray:
+    if anto:
+        return np.argwhere(np.tril(item_correlations, -1) <= critval)
+    return np.argwhere(np.tril(item_correlations, -1) >= critval)
+
+
+def compute_person_correlations(
+    response_i: np.ndarray, response_j: np.ndarray
+) -> np.ndarray:
+    return (
+        (response_i - response_i.mean(axis=1, keepdims=True))
+        * (response_j - response_j.mean(axis=1, keepdims=True))
+    ) / (response_i.std(axis=1, keepdims=True) * response_j.std(axis=1, keepdims=True))
+
+
 def psychsyn(
     x: Union[List[List[float]], np.ndarray],
     critval: float = 0.60,
@@ -32,23 +49,13 @@ def psychsyn(
     """
 
     item_correlations = np.corrcoef(x, rowvar=False)
+    item_pairs = get_highly_correlated_pairs(item_correlations, critval, anto)
 
-    if anto:
-        item_pairs = np.argwhere(np.tril(item_correlations, -1) <= -critval)
-    else:
-        item_pairs = np.argwhere(np.tril(item_correlations, -1) >= critval)
-
-    # Vectorized extraction of item pairs for all persons
     response_i = x[:, item_pairs[:, 0]]
     response_j = x[:, item_pairs[:, 1]]
 
-    # Compute correlations across people for each item pair
-    person_corrs = (
-        (response_i - response_i.mean(axis=1, keepdims=True))
-        * (response_j - response_j.mean(axis=1, keepdims=True))
-    ) / (response_i.std(axis=1, keepdims=True) * response_j.std(axis=1, keepdims=True))
+    person_corrs = compute_person_correlations(response_i, response_j)
 
-    # Find where either of the responses is nan
     invalid_pairs = np.isnan(response_i) | np.isnan(response_j)
     person_corrs[invalid_pairs] = np.nan
 
