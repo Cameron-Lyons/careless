@@ -29,21 +29,19 @@ def irv(
     Returns:
     - A numpy array of IRV values for each individual.
     """
+
+    if num_split <= 0:
+        raise ValueError("'num_split' should be greater than 0.")
+
+    # Determine the standard deviation function to use based on na_rm
+    std_func = np.nanstd if na_rm else np.std
+
     if split:
         chunk_size = x.shape[1] // num_split
-        if na_rm:
-            irvs_splits = [
-                np.nanstd(x[:, i : i + chunk_size], axis=1)
-                for i in range(0, x.shape[1], chunk_size)
-            ]
-        else:
-            irvs_splits = [
-                np.std(x[:, i : i + chunk_size], axis=1)
-                for i in range(0, x.shape[1], chunk_size)
-            ]
+        irvs_splits = [
+            std_func(x[:, i : i + chunk_size], axis=1)
+            for i in range(0, x.shape[1], chunk_size)
+        ]
         return np.mean(irvs_splits, axis=0)
-
-    if na_rm:
-        return np.nanstd(x, axis=1)
-
-    return np.std(x, axis=1)
+    else:
+        return std_func(x, axis=1)
