@@ -28,7 +28,7 @@ def evenodd(
     - A numpy array of even-odd consistency scores or a tuple of scores and diagnostic values.
     """
 
-    x = np.array(x)
+    x: np.ndarray = np.array(x)
     num_factors = len(factors)
     avg_correlations = np.zeros(x.shape[0])
     diag_vals = np.zeros(x.shape[0], dtype=int)
