@@ -1,17 +1,17 @@
 import unittest
 import numpy as np
 import scipy.stats as stats
-from ..src.longstring import (
+from careless.longstring import (
     run_length_encode,
     run_length_decode,
     longstr_message,
     avgstr_message,
     longstring,
 )
-from ..src.irv import irv
-from ..src.mahad import mahad
-from ..src.evenodd import evenodd
-from ..src.psychsyn import psychsyn, psychsyn_critval, psychant
+from careless.irv import irv
+from careless.mahad import mahad
+from careless.evenodd import evenodd
+from careless.psychsyn import psychsyn, psychsyn_critval, psychant
 
 
 class TestLongstring(unittest.TestCase):
