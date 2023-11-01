@@ -1,7 +1,7 @@
 """ Identifies the longest string or average length of identical consecutive responses for each observation """
 
 from itertools import groupby
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 
 def run_length_encode(message: str) -> List[Tuple[str, int]]:
@@ -13,7 +13,7 @@ def run_length_decode(encoded_data: List[Tuple[str, int]]) -> str:
     return "".join([char * count for char, count in encoded_data])
 
 
-def longstr_message(message: str) -> str:
+def longstr_message(message: str) -> Optional[str]:
     """Return the longest sequence of identical characters in a string"""
     encoded = run_length_encode(message)
     if not encoded:
