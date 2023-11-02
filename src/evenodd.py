@@ -6,10 +6,15 @@ from typing import List, Union, Tuple
 
 def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.ndarray:
     """Calculates correlations between even and odd columns."""
+    # Ensure we only compare up to the smallest pair count
+    min_cols = min(even_cols.shape[1], odd_cols.shape[1])
     correlations = np.array(
-        [np.corrcoef(e, o)[0, 1] for e, o in zip(even_cols, odd_cols)]
+        [
+            np.corrcoef(even_cols[:, i], odd_cols[:, i])[0, 1] if min_cols > 0 else 0
+            for i in range(min_cols)
+        ]
     )
-    correlations[np.isnan(correlations)] = 0
+    correlations[np.isnan(correlations)] = 0  # handle NaN
     return correlations
 
 
@@ -28,7 +33,7 @@ def evenodd(
     - A numpy array of even-odd consistency scores or a tuple of scores and diagnostic values.
     """
 
-    x: np.ndarray = np.array(x)
+    x = np.array(x)
     num_factors = len(factors)
     avg_correlations = np.zeros(x.shape[0])
     diag_vals = np.zeros(x.shape[0], dtype=int)
@@ -37,10 +42,14 @@ def evenodd(
     for factor_size in factors:
         end_col = start_col + factor_size
         even_cols = x[:, start_col:end_col:2]
-        odd_cols = x[:, (start_col + 1) : end_col : 2]
+        odd_cols = x[:, start_col + 1 : end_col : 2]
 
-        avg_correlations += calculate_correlations(even_cols, odd_cols)
-        diag_vals += np.minimum(even_cols.shape[1], odd_cols.shape[1])
+        corrs = calculate_correlations(even_cols, odd_cols)
+        avg_correlations += corrs
+        diag_vals += len(
+            corrs
+        )  # Update to reflect actual number of correlations calculated
+
         start_col = end_col
 
     if num_factors:
