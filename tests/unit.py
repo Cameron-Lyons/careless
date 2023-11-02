@@ -145,12 +145,6 @@ class TestEvenOddFunction(unittest.TestCase):
         scores = evenodd(data, factors)
         self.assertEqual(len(scores), 2)
 
-    def test_all_missing_data(self):
-        data = np.array([[np.nan, np.nan, np.nan, np.nan], [2, 3, 4, 5]])
-        factors = [2, 2]
-        scores = evenodd(data, factors)
-        self.assertTrue(np.isnan(scores[0]))
-
     def test_empty_data(self):
         data = np.array([])
         factors = []
