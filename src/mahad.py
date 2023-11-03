@@ -39,16 +39,29 @@ def mahad(
     if na_rm:
         x = x[~np.isnan(x).any(axis=1)]
 
+    if x.size == 0 or x.shape[0] < x.shape[1]:
+        raise ValueError(
+            "The input array must have more observations than dimensions and cannot be empty."
+        )
+
     mean_vector = np.mean(x, axis=0)
     cov_matrix = np.cov(x, rowvar=False)
-    inv_cov_matrix = np.linalg.inv(cov_matrix)
+
+    if np.linalg.cond(cov_matrix) < 1 / np.finfo(cov_matrix.dtype).eps:
+        inv_cov_matrix = np.linalg.inv(cov_matrix)
+    else:
+        inv_cov_matrix = np.linalg.pinv(cov_matrix)
 
     centered_data = x - mean_vector
-    distances = np.sqrt(np.sum(centered_data @ inv_cov_matrix * centered_data, axis=1))
+    mahalanobis_squared = np.einsum(
+        "ij,ji,ik->k", centered_data, inv_cov_matrix, centered_data
+    )
+
+    distances = np.sqrt(mahalanobis_squared)
 
     if flag:
         threshold = stats.chi2.ppf(confidence, df=x.shape[1])
-        flags = distances**2 > threshold
+        flags = mahalanobis_squared > threshold
         return distances, flags
 
     return distances
