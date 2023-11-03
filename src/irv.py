@@ -33,7 +33,6 @@ def irv(
     if num_split <= 0:
         raise ValueError("'num_split' should be greater than 0.")
 
-    # Determine the standard deviation function to use based on na_rm
     std_func = np.nanstd if na_rm else np.std
 
     if split:
