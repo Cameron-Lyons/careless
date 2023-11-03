@@ -37,7 +37,8 @@ def mahad(
     """
     if na_rm:
         x = x[~np.isnan(x).any(axis=1)]
-
+    if confidence < 0 or confidence > 1:
+        raise ValueError("Confidence must be between 0 and 1")
     if x.size == 0 or x.shape[0] < x.shape[1]:
         raise ValueError(
             "The input array must have more observations than dimensions and cannot be empty."
