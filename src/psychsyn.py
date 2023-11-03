@@ -60,11 +60,23 @@ def psychsyn(
     person_corrs[invalid_pairs] = np.nan
 
     if resample_na:
-        nan_corrs = np.isnan(person_corrs.mean(axis=1))
-        person_corrs[nan_corrs] = np.random.choice(
-            [-1, 1], size=nan_corrs.sum()
-        ) * np.abs(person_corrs[nan_corrs])
-
+        for person_index in range(person_corrs.shape[0]):
+            if np.isnan(person_corrs[person_index]).all():
+                person_corrs[person_index] = np.random.choice([-1, 1]) * np.abs(
+                    np.nanmean(person_corrs, axis=0)
+                )
+            else:
+                valid_corrs = person_corrs[person_index][
+                    ~np.isnan(person_corrs[person_index])
+                ]
+                if valid_corrs.size > 0:
+                    abs_mean_corr = np.abs(np.mean(valid_corrs))
+                    person_corrs[person_index][np.isnan(person_corrs[person_index])] = (
+                        np.random.choice(
+                            [-1, 1], size=np.isnan(person_corrs[person_index]).sum()
+                        )
+                        * abs_mean_corr
+                    )
     scores = np.nanmean(person_corrs, axis=1)
 
     if diag:
