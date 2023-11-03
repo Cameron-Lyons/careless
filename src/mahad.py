@@ -35,7 +35,6 @@ def mahad(
     Returns:
     - Mahalanobis distances or a tuple of distances and outlier flags.
     """
-
     if na_rm:
         x = x[~np.isnan(x).any(axis=1)]
 
@@ -47,14 +46,15 @@ def mahad(
     mean_vector = np.mean(x, axis=0)
     cov_matrix = np.cov(x, rowvar=False)
 
-    if np.linalg.cond(cov_matrix) < 1 / np.finfo(cov_matrix.dtype).eps:
+    cond_number = np.linalg.cond(cov_matrix)
+    if cond_number < 1 / np.finfo(cov_matrix.dtype).eps:
         inv_cov_matrix = np.linalg.inv(cov_matrix)
     else:
         inv_cov_matrix = np.linalg.pinv(cov_matrix)
 
     centered_data = x - mean_vector
     mahalanobis_squared = np.einsum(
-        "ij,ji,ik->k", centered_data, inv_cov_matrix, centered_data
+        "ij,jk,ik->i", centered_data, inv_cov_matrix, centered_data
     )
 
     distances = np.sqrt(mahalanobis_squared)
