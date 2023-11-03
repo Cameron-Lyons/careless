@@ -32,7 +32,9 @@ def avgstr_message(message: str) -> float:
     return avgstr
 
 
-def longstring(messages: str | List[str], avg=False) -> str | List[str]:
+def longstring(
+    messages: str | List[str], avg=False
+) -> Optional[str] | List[str] | float | List[float]:
     """Takes a string or list of strings
     For each string, the length of the maximum uninterrupted string of
     identical responses is returned. Additionally, can return the average length of uninterrupted string of identical responses.
