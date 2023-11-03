@@ -91,11 +91,17 @@ class TestMahadFunction(unittest.TestCase):
         self.assertTrue((distances >= 0).all())
 
     def test_with_na_rm(self):
-        data_with_na = np.array(
-            [[1, 2, 3], [np.nan, 3, 4], [3, np.nan, 5], [10, 10, 10]]
+        self.data_with_nan = np.array(
+            [[1, 2, 3], [2, np.nan, 4], [5, 6, 7], [10, 10, 10]]
         )
-        distances = mahad(data_with_na, na_rm=True)
-        self.assertEqual(len(distances), 2)
+        distances = mahad(self.data_with_nan, na_rm=True)
+        self.assertEqual(len(distances), 3)
+        self.assertTrue((distances >= 0).all())
+        expected_data_without_nan = self.data_with_nan[
+            ~np.isnan(self.data_with_nan).any(axis=1)
+        ]
+        expected_distances = mahad(expected_data_without_nan, na_rm=False)
+        np.testing.assert_array_almost_equal(distances, expected_distances)
 
     def test_flagging(self):
         _, flags = mahad(self.data, flag=True)
