@@ -1,7 +1,8 @@
 """ Identifies the longest string or average length of identical consecutive responses for each observation """
 
+
 from itertools import groupby
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 
 def run_length_encode(message: str) -> List[Tuple[str, int]]:
@@ -13,7 +14,7 @@ def run_length_decode(encoded_data: List[Tuple[str, int]]) -> str:
     return "".join([char * count for char, count in encoded_data])
 
 
-def longstr_message(message: str) -> Optional[str]:
+def longstr_message(message: str) -> Optional[Tuple[str, int]]:
     """Return the longest sequence of identical characters in a string"""
     encoded = run_length_encode(message)
     if not encoded:
@@ -23,25 +24,21 @@ def longstr_message(message: str) -> Optional[str]:
 
 
 def avgstr_message(message: str) -> float:
-    """return average length of uninterrupted string of identical characters in a string"""
+    """Return average length of uninterrupted string of identical characters in a string"""
     if not message:
         return 0.0
     rle_list = run_length_encode(message)
     total_len = sum(s[1] for s in rle_list)
-    avgstr = float(total_len) / float(len(rle_list))
-    return avgstr
+    return total_len / len(rle_list)
 
 
 def longstring(
-    messages: str | List[str], avg=False
-) -> Optional[str] | List[str] | float | List[float]:
-    """Takes a string or list of strings
-    For each string, the length of the maximum uninterrupted string of
-    identical responses is returned. Additionally, can return the average length of uninterrupted string of identical responses.
-
-    messages string or list of strings
-    avg bool if false, return longest string of identical responses for each observation
-        if true, return average length of uninterrupted string of identical responses for each observation
+    messages: Union[str, List[str]], avg: bool = False
+) -> Union[
+    Optional[Tuple[str, int]], List[Optional[Tuple[str, int]]], float, List[float]
+]:
+    """Takes a string or list of strings and, for each string, returns either the longest sequence of
+    identical characters or the average length of uninterrupted strings of identical characters, based on the avg parameter.
     """
     if avg:
         if isinstance(messages, str):
