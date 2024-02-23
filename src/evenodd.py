@@ -6,7 +6,7 @@ from typing import List, Union, Tuple
 
 def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.ndarray:
     """Calculates correlations between even and odd columns."""
-    # Ensure we only compare up to the smallest pair count
+    # only compare up to the smallest pair count
     min_cols = min(even_cols.shape[1], odd_cols.shape[1])
     correlations = np.array(
         [
