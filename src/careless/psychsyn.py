@@ -148,6 +148,7 @@ def psychsyn(
     item_pairs = get_highly_correlated_pairs(item_correlations, critval, anto)
     
     if len(item_pairs) == 0:
+        # No pairs meet the threshold
         if diag:
             return np.full(x_array.shape[0], np.nan), np.zeros(x_array.shape[0], dtype=int)
         else:
@@ -166,7 +167,11 @@ def psychsyn(
     
     scores = np.nanmean(person_corrs, axis=1)
     
-    scores[np.isnan(scores)] = 0.0
+    # Only set NaNs to zero if there were pairs but all correlations were NaN for a person
+    # If no pairs, we already returned all NaN above
+    # So here, only replace NaN with 0 if there were pairs
+    if np.any(np.isnan(scores)) and len(item_pairs) > 0:
+        scores = np.nan_to_num(scores, nan=0.0)
     
     if diag:
         diag_values = np.sum(~np.isnan(person_corrs), axis=1)

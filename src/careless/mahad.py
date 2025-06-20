@@ -116,6 +116,8 @@ def mahad(
     
     distances = np.full(shape=(x_array.shape[0],), fill_value=np.nan)
     distances[valid_mask] = distances_filtered
+
+    distances = np.where(np.isnan(distances), np.nan, np.abs(distances))
     
     if flag:
         flags = _flag_outliers(distances, confidence, method, x_array.shape[1])
