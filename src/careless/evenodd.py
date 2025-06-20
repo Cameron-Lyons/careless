@@ -6,25 +6,46 @@ from typing import List, Union, Tuple
 
 def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.ndarray:
     """
-    Calculates correlations between even and odd columns.
+    Calculates correlations between even and odd columns for each individual.
     
     Parameters:
-    - even_cols: Array of even-indexed columns
-    - odd_cols: Array of odd-indexed columns
+    - even_cols: Array of even-indexed columns (rows are individuals)
+    - odd_cols: Array of odd-indexed columns (rows are individuals)
     
     Returns:
-    - Array of correlation coefficients between corresponding even/odd pairs
+    - Array of correlation coefficients for each individual
     """
-    min_cols = min(even_cols.shape[1], odd_cols.shape[1])
-    if min_cols == 0:
-        return np.array([])
+    if even_cols.shape[0] != odd_cols.shape[0]:
+        raise ValueError("even_cols and odd_cols must have the same number of rows")
     
-    correlations = np.array([
-        np.corrcoef(even_cols[:, i], odd_cols[:, i])[0, 1] 
-        for i in range(min_cols)
-    ])
-
-    correlations[np.isnan(correlations)] = 0 
+    num_individuals = even_cols.shape[0]
+    min_cols = min(even_cols.shape[1], odd_cols.shape[1])
+    
+    if min_cols == 0:
+        return np.full(num_individuals, np.nan)
+    
+    correlations = np.zeros(num_individuals)
+    
+    for i in range(num_individuals):
+        even_vals = even_cols[i, :min_cols]
+        odd_vals = odd_cols[i, :min_cols]
+        
+        valid_mask = ~(np.isnan(even_vals) | np.isnan(odd_vals))
+        if np.sum(valid_mask) < 2:
+            correlations[i] = np.nan
+        else:
+            even_clean = even_vals[valid_mask]
+            odd_clean = odd_vals[valid_mask]
+            
+            if len(even_clean) < 2:
+                correlations[i] = np.nan
+            else:
+                try:
+                    corr_matrix = np.corrcoef(even_clean, odd_clean)
+                    correlations[i] = corr_matrix[0, 1] if not np.isnan(corr_matrix[0, 1]) else 0
+                except Exception:
+                    correlations[i] = np.nan
+    
     return correlations
 
 
@@ -64,13 +85,21 @@ def evenodd(
     if not factors:
         raise ValueError("factors list cannot be empty")
     
-    if not x or len(x) == 0:
+    if x is None:
+        raise ValueError("input data cannot be None")
+    
+    if isinstance(x, np.ndarray) and x.size == 0:
         raise ValueError("input data cannot be empty")
     
-    x_array = np.array(x)
+    if isinstance(x, list) and len(x) == 0:
+        raise ValueError("input data cannot be empty")
     
+    x_array = np.array(x, dtype=float)
+    if x_array.ndim == 1:
+        x_array = x_array.reshape(1, -1)
     if x_array.ndim != 2:
         raise ValueError("input data must be 2-dimensional")
+    num_individuals = x_array.shape[0]
     
     expected_cols = sum(factors)
     if x_array.shape[1] != expected_cols:
@@ -78,7 +107,6 @@ def evenodd(
             f"sum of factors ({expected_cols}) must equal number of columns ({x_array.shape[1]})"
         )
     
-    num_individuals = x_array.shape[0]
     all_correlations = []
     diag_vals = np.zeros(num_individuals, dtype=int)
     
@@ -97,14 +125,15 @@ def evenodd(
         
         if len(corrs) > 0:
             all_correlations.append(corrs)
-            diag_vals += len(corrs)
+            diag_vals += (~np.isnan(corrs)).astype(int)
         
         start_col = end_col
     
     if all_correlations:
         stacked_corrs = np.column_stack(all_correlations)
-        avg_correlations = np.mean(stacked_corrs, axis=1)
+        avg_correlations = np.nanmean(stacked_corrs, axis=1)
+        avg_correlations = np.nan_to_num(avg_correlations, nan=0.0)
     else:
-        avg_correlations = np.zeros(num_individuals)
+        avg_correlations = np.full(num_individuals, np.nan)
     
     return (avg_correlations, diag_vals) if diag else avg_correlations
