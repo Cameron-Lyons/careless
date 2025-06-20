@@ -61,7 +61,7 @@ def irv(
         [1.87, 2.16]  # Mean IRV across custom splits
     """
     
-    if not x or len(x) == 0:
+    if x is None or (isinstance(x, np.ndarray) and x.size == 0) or (not isinstance(x, np.ndarray) and len(x) == 0):
         raise ValueError("input data cannot be empty")
     
     x_array = np.array(x)
