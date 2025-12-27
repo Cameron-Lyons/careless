@@ -33,22 +33,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: "3.13"
-          cache: "pip"
+          enable-cache: true
 
-      - name: Install build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
+      - name: Set up Python
+        run: uv python install 3.13
 
       - name: Build package
-        run: python -m build
+        run: uv build
 
       - name: Check package
-        run: twine check dist/*
+        run: |
+          uv pip install twine
+          uv run twine check dist/*
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -62,10 +61,13 @@ jobs:
     needs: build
 
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: "3.13"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.13
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -74,10 +76,10 @@ jobs:
           path: dist/
 
       - name: Install from wheel
-        run: pip install dist/*.whl
+        run: uv pip install dist/*.whl
 
       - name: Test import
-        run: python -c "import careless; print('Import successful')"
+        run: uv run python -c "import careless; print('Import successful')"
 
   publish-testpypi:
     name: Publish to TestPyPI
