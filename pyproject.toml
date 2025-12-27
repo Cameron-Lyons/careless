@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "careless"
+name = "careless-py"
 version = "0.0.1"
 authors = [
   { name="Cameron Lyons", email="cameron.lyons2@gmail.com" },

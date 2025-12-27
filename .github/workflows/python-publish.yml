@@ -80,7 +80,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'testpypi'
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/careless
+      url: https://test.pypi.org/p/careless-py
 
     steps:
       - name: Download build artifacts
@@ -101,7 +101,7 @@ jobs:
     if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi')
     environment:
       name: pypi
-      url: https://pypi.org/p/careless
+      url: https://pypi.org/p/careless-py
 
     steps:
       - name: Download build artifacts
