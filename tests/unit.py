@@ -5,26 +5,24 @@ library, including longstring, IRV, MAHAD, even-odd, and psychometric synonym
 detection functions.
 """
 
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 import unittest
-from typing import List, Tuple, Optional, Any
+from typing import Any
+
 import numpy as np
 import numpy.typing as npt
 import scipy.stats as stats
-from careless.longstring import (
-    run_length_encode,
-    run_length_decode,
-    longstr_message,
-    avgstr_message,
-    longstring
-)
-from careless.irv import irv
-from careless.mahad import mahad, mahad_summary
+
 from careless.evenodd import evenodd
-from careless.psychsyn import psychsyn, psychsyn_critval, psychant, psychsyn_summary
+from careless.irv import irv
+from careless.longstring import (
+    avgstr_message,
+    longstr_message,
+    longstring,
+    run_length_decode,
+    run_length_encode,
+)
+from careless.mahad import mahad, mahad_summary
+from careless.psychsyn import psychant, psychsyn, psychsyn_critval, psychsyn_summary
 
 
 class TestLongstring(unittest.TestCase):
@@ -95,20 +93,16 @@ class TestLongstring(unittest.TestCase):
     def test_longstring(self) -> None:
         """Test main longstring function with single strings and lists."""
         self.assertEqual(longstring("AAAABBBCCDAA"), ("A", 4))
-        self.assertEqual(
-            longstring(["AAAABBBCCDAA", "A", ""]), [("A", 4), ("A", 1), None]
-        )
+        self.assertEqual(longstring(["AAAABBBCCDAA", "A", ""]), [("A", 4), ("A", 1), None])
 
         self.assertAlmostEqual(longstring("AAABBBCCDAA", avg=True), 2.2)
-        self.assertAlmostEqual(
-            longstring(["AAABBBCCDAA", "A", ""], avg=True), [2.2, 1.0, 0.0]
-        )
+        self.assertAlmostEqual(longstring(["AAABBBCCDAA", "A", ""], avg=True), [2.2, 1.0, 0.0])
 
     def test_longstring_numpy_array(self) -> None:
         """Test longstring function accepts numpy array input."""
         data: npt.NDArray[np.str_] = np.array(["AAAABBBCCDAA", "A", ""])
-        result: List[Optional[Tuple[str, int]]] = longstring(data)
-        expected: List[Optional[Tuple[str, int]]] = [("A", 4), ("A", 1), None]
+        result: list[tuple[str, int] | None] = longstring(data)
+        expected: list[tuple[str, int] | None] = [("A", 4), ("A", 1), None]
         self.assertEqual(result, expected)
 
     def test_longstring_validation(self) -> None:
@@ -147,7 +141,7 @@ class TestIRV(unittest.TestCase):
 
     def test_irv_with_list_input(self) -> None:
         """Test IRV function accepts list input and converts appropriately."""
-        x: List[List[int]] = [[1, 2, 3, 4], [2, 4, 6, 8], [1, 3, 5, 7]]
+        x: list[list[int]] = [[1, 2, 3, 4], [2, 4, 6, 8], [1, 3, 5, 7]]
         result: npt.NDArray[np.float64] = irv(x)
         expected: npt.NDArray[np.float64] = np.array([1.11803399, 2.23606798, 2.23606798])
         np.testing.assert_almost_equal(result, expected)
@@ -210,7 +204,9 @@ class TestMahadFunction(unittest.TestCase):
 
     def setUp(self) -> None:
         """Initialize test data with normal cases and one outlier."""
-        self.data: npt.NDArray[np.float64] = np.array([[1, 2, 3], [2, 3, 4], [3, 4, 5], [10, 10, 10]])
+        self.data: npt.NDArray[np.float64] = np.array(
+            [[1, 2, 3], [2, 3, 4], [3, 4, 5], [10, 10, 10]]
+        )
 
     def test_basic_functionality(self) -> None:
         """Test basic Mahalanobis distance calculation."""
@@ -220,7 +216,7 @@ class TestMahadFunction(unittest.TestCase):
 
     def test_with_list_input(self) -> None:
         """Test MAHAD function accepts list input."""
-        data: List[List[int]] = [[1, 2, 3], [2, 3, 4], [3, 4, 5], [10, 10, 10]]
+        data: list[list[int]] = [[1, 2, 3], [2, 3, 4], [3, 4, 5], [10, 10, 10]]
         distances: npt.NDArray[np.float64] = mahad(data)
         self.assertEqual(len(distances), 4)
         self.assertTrue((distances >= 0).all())
@@ -298,10 +294,10 @@ class TestMahadFunction(unittest.TestCase):
     def test_mahad_summary(self) -> None:
         """Test MAHAD summary returns expected statistics dictionary."""
         summary: dict[str, Any] = mahad_summary(self.data)
-        self.assertIn('mean', summary)
-        self.assertIn('std', summary)
-        self.assertIn('outliers', summary)
-        self.assertIn('total', summary)
+        self.assertIn("mean", summary)
+        self.assertIn("std", summary)
+        self.assertIn("outliers", summary)
+        self.assertIn("total", summary)
 
 
 class TestEvenOddFunction(unittest.TestCase):
@@ -314,28 +310,28 @@ class TestEvenOddFunction(unittest.TestCase):
     def test_basic_functionality(self) -> None:
         """Test basic even-odd consistency scoring."""
         data: npt.NDArray[np.float64] = np.array([[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7]])
-        factors: List[int] = [3, 3]
+        factors: list[int] = [3, 3]
         scores: npt.NDArray[np.float64] = evenodd(data, factors)
         self.assertEqual(len(scores), 2)
 
     def test_with_list_input(self) -> None:
         """Test even-odd function accepts list input."""
-        data: List[List[int]] = [[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7]]
-        factors: List[int] = [3, 3]
+        data: list[list[int]] = [[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7]]
+        factors: list[int] = [3, 3]
         scores: npt.NDArray[np.float64] = evenodd(data, factors)
         self.assertEqual(len(scores), 2)
 
     def test_with_missing_data(self) -> None:
         """Test even-odd handles missing values in input data."""
         data: npt.NDArray[np.float64] = np.array([[1, np.nan, 3, 4, np.nan, 6], [2, 3, 4, 5, 6, 7]])
-        factors: List[int] = [3, 3]
+        factors: list[int] = [3, 3]
         scores: npt.NDArray[np.float64] = evenodd(data, factors)
         self.assertEqual(len(scores), 2)
 
     def test_diag_output(self) -> None:
         """Test even-odd returns diagnostic values when diag=True."""
         data: npt.NDArray[np.float64] = np.array([[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7]])
-        factors: List[int] = [3, 3]
+        factors: list[int] = [3, 3]
         scores: npt.NDArray[np.float64]
         diag_vals: npt.NDArray[np.float64]
         scores, diag_vals = evenodd(data, factors, diag=True)
@@ -344,15 +340,17 @@ class TestEvenOddFunction(unittest.TestCase):
 
     def test_varying_factors(self) -> None:
         """Test even-odd with different factor sizes."""
-        data: npt.NDArray[np.float64] = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [2, 3, 4, 5, 6, 7, 8, 9]])
-        factors: List[int] = [4, 4]
+        data: npt.NDArray[np.float64] = np.array(
+            [[1, 2, 3, 4, 5, 6, 7, 8], [2, 3, 4, 5, 6, 7, 8, 9]]
+        )
+        factors: list[int] = [4, 4]
         scores: npt.NDArray[np.float64] = evenodd(data, factors)
         self.assertEqual(len(scores), 2)
 
     def test_single_item_factors(self) -> None:
         """Test even-odd with single-item factors."""
         data: npt.NDArray[np.float64] = np.array([[1, 2, 3, 4, 5], [2, 3, 4, 5, 6]])
-        factors: List[int] = [1, 2, 2]
+        factors: list[int] = [1, 2, 2]
         scores: npt.NDArray[np.float64] = evenodd(data, factors)
         self.assertEqual(len(scores), 2)
 
@@ -377,7 +375,9 @@ class TestPsychometricFunctions(unittest.TestCase):
 
     def setUp(self) -> None:
         """Initialize test data with simple progressive values."""
-        self.data: npt.NDArray[np.float64] = np.array([[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]])
+        self.data: npt.NDArray[np.float64] = np.array(
+            [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]]
+        )
 
     def test_psychsyn_basic(self) -> None:
         """Test basic psychometric synonym scoring."""
@@ -386,7 +386,7 @@ class TestPsychometricFunctions(unittest.TestCase):
 
     def test_psychsyn_with_list_input(self) -> None:
         """Test psychsyn function accepts list input."""
-        data: List[List[int]] = [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]]
+        data: list[list[int]] = [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]]
         scores: npt.NDArray[np.float64] = psychsyn(data)
         self.assertEqual(len(scores), len(data))
 
@@ -413,12 +413,12 @@ class TestPsychometricFunctions(unittest.TestCase):
 
     def test_psychsyn_critval(self) -> None:
         """Test critical value calculation returns tuples with indices and correlations."""
-        results: List[Tuple[int, int, float]] = psychsyn_critval(self.data)
+        results: list[tuple[int, int, float]] = psychsyn_critval(self.data)
         self.assertTrue(all(isinstance(t, tuple) and len(t) == 3 for t in results))
 
     def test_psychsyn_critval_with_min_correlation(self) -> None:
         """Test critical value filtering respects minimum correlation threshold."""
-        results: List[Tuple[int, int, float]] = psychsyn_critval(self.data, min_correlation=0.5)
+        results: list[tuple[int, int, float]] = psychsyn_critval(self.data, min_correlation=0.5)
         self.assertTrue(all(abs(t[2]) >= 0.5 for t in results))
 
     def test_psychsyn_anto(self) -> None:
@@ -439,10 +439,10 @@ class TestPsychometricFunctions(unittest.TestCase):
     def test_psychsyn_summary(self) -> None:
         """Test psychsyn summary returns expected statistics dictionary."""
         summary: dict[str, Any] = psychsyn_summary(self.data)
-        self.assertIn('mean_score', summary)
-        self.assertIn('std_score', summary)
-        self.assertIn('item_pairs', summary)
-        self.assertIn('total_individuals', summary)
+        self.assertIn("mean_score", summary)
+        self.assertIn("std_score", summary)
+        self.assertIn("item_pairs", summary)
+        self.assertIn("total_individuals", summary)
 
     def test_psychsyn_validation(self) -> None:
         """Test psychsyn raises appropriate errors for invalid inputs."""
@@ -457,11 +457,7 @@ class TestPsychometricFunctions(unittest.TestCase):
 
     def test_psychsyn_edge_cases(self) -> None:
         """Test psychsyn handles edge cases like high thresholds and constant data."""
-        data: npt.NDArray[np.float64] = np.array([
-            [1, 2, 3, 4],
-            [4, 3, 2, 1],
-            [1, 3, 2, 4]
-        ])
+        data: npt.NDArray[np.float64] = np.array([[1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4]])
         scores: npt.NDArray[np.float64] = psychsyn(data, critval=0.99)
         self.assertTrue(np.all(np.isnan(scores)) or np.all(scores == 0))
 
