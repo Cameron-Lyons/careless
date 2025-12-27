@@ -37,7 +37,7 @@ jobs:
         run: uv sync --extra dev
 
       - name: Run pip-audit
-        run: uv run pip-audit --strict --desc on
+        run: uv run pip-audit --strict --desc on --skip-editable
 
   codeql:
     name: CodeQL Analysis
