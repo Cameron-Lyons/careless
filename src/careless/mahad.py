@@ -19,7 +19,7 @@ import numpy as np
 SCIPY_AVAILABLE = False
 stats: Any = None
 try:
-    import scipy.stats as stats  # type: ignore[import-untyped,no-redef]
+    import scipy.stats as stats  # type: ignore[no-redef]
 
     SCIPY_AVAILABLE = True
 except ImportError:
