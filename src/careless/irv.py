@@ -97,7 +97,8 @@ def irv(
     std_func = np.nanstd if na_rm else np.std
 
     if not split:
-        return std_func(x_array, axis=1)
+        result: np.ndarray = std_func(x_array, axis=1)
+        return result
 
     if split_points is not None:
         irvs_splits = []
@@ -119,6 +120,8 @@ def irv(
                 irvs_splits.append(irv_split)
 
     if irvs_splits:
-        return np.mean(irvs_splits, axis=0)
+        split_result: np.ndarray = np.mean(irvs_splits, axis=0)
+        return split_result
     else:
-        return std_func(x_array, axis=1)
+        fallback: np.ndarray = std_func(x_array, axis=1)
+        return fallback

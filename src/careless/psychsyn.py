@@ -10,6 +10,7 @@ individuals respond to psychometrically similar (synonym) or opposite (antonym) 
 """
 
 import random
+from typing import Any
 
 import numpy as np
 
@@ -59,7 +60,8 @@ def compute_person_correlations(response_i: np.ndarray, response_j: np.ndarray) 
     numerator = (response_i - mean_i) * (response_j - mean_j)
     denominator = std_i * std_j
 
-    return numerator / denominator
+    result: np.ndarray = numerator / denominator
+    return result
 
 
 def psychsyn(
@@ -169,10 +171,11 @@ def psychsyn(
         scores = np.nan_to_num(scores, nan=0.0)
 
     if diag:
-        diag_values = np.sum(~np.isnan(person_corrs), axis=1)
+        diag_values: np.ndarray = np.sum(~np.isnan(person_corrs), axis=1)
         return scores, diag_values
     else:
-        return scores
+        result: np.ndarray = scores
+        return result
 
 
 def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
@@ -301,7 +304,7 @@ def psychant(
 
 def psychsyn_summary(
     x: list[list[float]] | np.ndarray, critval: float = 0.60, anto: bool = False
-) -> dict:
+) -> dict[str, Any]:
     """
     Calculate summary statistics for psychometric synonym/antonym analysis.
 

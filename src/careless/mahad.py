@@ -12,15 +12,18 @@ The Mahalanobis distance is thus unitless and scale-invariant, and takes into ac
 correlations of the data set.
 """
 
+from typing import Any
+
 import numpy as np
 
 SCIPY_AVAILABLE = False
+stats: Any = None
 try:
-    import scipy.stats as stats
+    import scipy.stats as stats  # type: ignore[import-untyped,no-redef]
 
     SCIPY_AVAILABLE = True
 except ImportError:
-    stats = None
+    pass
 
 
 def mahad(
@@ -147,7 +150,8 @@ def _compute_mahalanobis_distance(x: np.ndarray) -> np.ndarray:
 
     centered_data = x - mean_vector
     mahalanobis_squared = np.einsum("ij,jk,ik->i", centered_data, inv_cov_matrix, centered_data)
-    return np.sqrt(mahalanobis_squared)
+    result: np.ndarray = np.sqrt(mahalanobis_squared)
+    return result
 
 
 def _flag_outliers(
@@ -168,8 +172,9 @@ def _flag_outliers(
     if method == "chi2":
         if not SCIPY_AVAILABLE:
             raise RuntimeError("scipy is required for chi2 method. Install with: pip install scipy")
-        threshold = stats.chi2.ppf(confidence, df=n_features)
-        return distances > np.sqrt(threshold)
+        threshold: float = stats.chi2.ppf(confidence, df=n_features)
+        result: np.ndarray = distances > np.sqrt(threshold)
+        return result
 
     elif method == "iqr":
         valid_distances = distances[~np.isnan(distances)]
@@ -213,7 +218,7 @@ def _flag_outliers(
 
 def mahad_summary(
     x: list[list[float]] | np.ndarray, confidence: float = 0.95, na_rm: bool = False
-) -> dict:
+) -> dict[str, Any]:
     """
     Calculate summary statistics for Mahalanobis distances.
 
