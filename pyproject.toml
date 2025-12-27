@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "careless-py"
-version = "0.0.1"
+version = "1.0.0"
 authors = [
   { name="Cameron Lyons", email="cameron.lyons2@gmail.com" },
 ]
@@ -42,8 +42,8 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [project.urls]
-"Homepage" = "https://github.com/Cameron-Lyons/careless"
-"Bug Tracker" = "https://github.com/Cameron-Lyons/careless/issues"
+"Homepage" = "https://github.com/Cameron-Lyons/careless-py"
+"Bug Tracker" = "https://github.com/Cameron-Lyons/careless-py/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
