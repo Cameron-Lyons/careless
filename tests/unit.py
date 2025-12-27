@@ -530,7 +530,9 @@ class TestGetHighlyCorrelatedPairs(unittest.TestCase):
         corr_matrix: npt.NDArray[np.float64] = np.array(
             [[1.0, 0.8, 0.3], [0.8, 1.0, 0.2], [0.3, 0.2, 1.0]]
         )
-        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.7, anto=False)
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(
+            corr_matrix, critval=0.7, anto=False
+        )
         self.assertEqual(len(pairs), 1)
         self.assertTrue((pairs[0] == [1, 0]).all())
 
@@ -539,7 +541,9 @@ class TestGetHighlyCorrelatedPairs(unittest.TestCase):
         corr_matrix: npt.NDArray[np.float64] = np.array(
             [[1.0, -0.8, 0.3], [-0.8, 1.0, 0.2], [0.3, 0.2, 1.0]]
         )
-        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=-0.7, anto=True)
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(
+            corr_matrix, critval=-0.7, anto=True
+        )
         self.assertEqual(len(pairs), 1)
         self.assertTrue((pairs[0] == [1, 0]).all())
 
@@ -548,7 +552,9 @@ class TestGetHighlyCorrelatedPairs(unittest.TestCase):
         corr_matrix: npt.NDArray[np.float64] = np.array(
             [[1.0, 0.3, 0.2], [0.3, 1.0, 0.1], [0.2, 0.1, 1.0]]
         )
-        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.9, anto=False)
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(
+            corr_matrix, critval=0.9, anto=False
+        )
         self.assertEqual(len(pairs), 0)
 
     def test_multiple_pairs(self) -> None:
@@ -556,13 +562,17 @@ class TestGetHighlyCorrelatedPairs(unittest.TestCase):
         corr_matrix: npt.NDArray[np.float64] = np.array(
             [[1.0, 0.9, 0.85], [0.9, 1.0, 0.88], [0.85, 0.88, 1.0]]
         )
-        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.8, anto=False)
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(
+            corr_matrix, critval=0.8, anto=False
+        )
         self.assertEqual(len(pairs), 3)
 
     def test_excludes_diagonal(self) -> None:
         """Test that diagonal elements are not included as pairs."""
         corr_matrix: npt.NDArray[np.float64] = np.array([[1.0, 0.5], [0.5, 1.0]])
-        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.99, anto=False)
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(
+            corr_matrix, critval=0.99, anto=False
+        )
         self.assertEqual(len(pairs), 0)
 
 
