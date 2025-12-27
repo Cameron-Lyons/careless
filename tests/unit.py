@@ -12,7 +12,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy.stats as stats
 
-from careless.evenodd import evenodd
+from careless.evenodd import calculate_correlations, evenodd
 from careless.irv import irv
 from careless.longstring import (
     avgstr_message,
@@ -22,7 +22,14 @@ from careless.longstring import (
     run_length_encode,
 )
 from careless.mahad import mahad, mahad_summary
-from careless.psychsyn import psychant, psychsyn, psychsyn_critval, psychsyn_summary
+from careless.psychsyn import (
+    compute_person_correlations,
+    get_highly_correlated_pairs,
+    psychant,
+    psychsyn,
+    psychsyn_critval,
+    psychsyn_summary,
+)
 
 
 class TestLongstring(unittest.TestCase):
@@ -366,6 +373,55 @@ class TestEvenOddFunction(unittest.TestCase):
             evenodd([], [2, 2])
 
 
+class TestCalculateCorrelations(unittest.TestCase):
+    """Test suite for the calculate_correlations helper function."""
+
+    def test_basic_correlation(self) -> None:
+        """Test basic correlation calculation between even and odd columns."""
+        even_cols: npt.NDArray[np.float64] = np.array([[1, 3, 5], [2, 4, 6]])
+        odd_cols: npt.NDArray[np.float64] = np.array([[2, 4, 6], [3, 5, 7]])
+        result: npt.NDArray[np.float64] = calculate_correlations(even_cols, odd_cols)
+        self.assertEqual(len(result), 2)
+        self.assertTrue(np.all(result == 1.0))
+
+    def test_negative_correlation(self) -> None:
+        """Test correlation calculation with negatively correlated data."""
+        even_cols: npt.NDArray[np.float64] = np.array([[1, 2, 3], [4, 5, 6]])
+        odd_cols: npt.NDArray[np.float64] = np.array([[3, 2, 1], [6, 5, 4]])
+        result: npt.NDArray[np.float64] = calculate_correlations(even_cols, odd_cols)
+        self.assertEqual(len(result), 2)
+        np.testing.assert_almost_equal(result, [-1.0, -1.0])
+
+    def test_with_nan_values(self) -> None:
+        """Test correlation calculation handles NaN values correctly."""
+        even_cols: npt.NDArray[np.float64] = np.array([[1, np.nan, 5], [2, 4, 6]])
+        odd_cols: npt.NDArray[np.float64] = np.array([[2, 4, 6], [3, 5, 7]])
+        result: npt.NDArray[np.float64] = calculate_correlations(even_cols, odd_cols)
+        self.assertEqual(len(result), 2)
+
+    def test_mismatched_rows_raises_error(self) -> None:
+        """Test that mismatched row counts raise ValueError."""
+        even_cols: npt.NDArray[np.float64] = np.array([[1, 2, 3]])
+        odd_cols: npt.NDArray[np.float64] = np.array([[1, 2, 3], [4, 5, 6]])
+        with self.assertRaises(ValueError):
+            calculate_correlations(even_cols, odd_cols)
+
+    def test_empty_columns(self) -> None:
+        """Test correlation with empty column arrays."""
+        even_cols: npt.NDArray[np.float64] = np.array([[1], [2]]).reshape(2, 1)[:, :0]
+        odd_cols: npt.NDArray[np.float64] = np.array([[1], [2]]).reshape(2, 1)[:, :0]
+        result: npt.NDArray[np.float64] = calculate_correlations(even_cols, odd_cols)
+        self.assertEqual(len(result), 2)
+        self.assertTrue(np.all(np.isnan(result)))
+
+    def test_insufficient_valid_pairs(self) -> None:
+        """Test correlation returns NaN when insufficient valid pairs exist."""
+        even_cols: npt.NDArray[np.float64] = np.array([[1, np.nan, np.nan]])
+        odd_cols: npt.NDArray[np.float64] = np.array([[np.nan, np.nan, 3]])
+        result: npt.NDArray[np.float64] = calculate_correlations(even_cols, odd_cols)
+        self.assertTrue(np.isnan(result[0]))
+
+
 class TestPsychometricFunctions(unittest.TestCase):
     """Test suite for psychometric synonym/antonym detection functions.
 
@@ -464,6 +520,89 @@ class TestPsychometricFunctions(unittest.TestCase):
         data = np.array([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]])
         scores = psychsyn(data, critval=0.5)
         self.assertEqual(len(scores), 3)
+
+
+class TestGetHighlyCorrelatedPairs(unittest.TestCase):
+    """Test suite for the get_highly_correlated_pairs helper function."""
+
+    def test_finds_positive_correlations(self) -> None:
+        """Test finding positively correlated item pairs."""
+        corr_matrix: npt.NDArray[np.float64] = np.array(
+            [[1.0, 0.8, 0.3], [0.8, 1.0, 0.2], [0.3, 0.2, 1.0]]
+        )
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.7, anto=False)
+        self.assertEqual(len(pairs), 1)
+        self.assertTrue((pairs[0] == [1, 0]).all())
+
+    def test_finds_negative_correlations(self) -> None:
+        """Test finding negatively correlated item pairs (antonyms)."""
+        corr_matrix: npt.NDArray[np.float64] = np.array(
+            [[1.0, -0.8, 0.3], [-0.8, 1.0, 0.2], [0.3, 0.2, 1.0]]
+        )
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=-0.7, anto=True)
+        self.assertEqual(len(pairs), 1)
+        self.assertTrue((pairs[0] == [1, 0]).all())
+
+    def test_no_pairs_above_threshold(self) -> None:
+        """Test returns empty array when no pairs meet threshold."""
+        corr_matrix: npt.NDArray[np.float64] = np.array(
+            [[1.0, 0.3, 0.2], [0.3, 1.0, 0.1], [0.2, 0.1, 1.0]]
+        )
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.9, anto=False)
+        self.assertEqual(len(pairs), 0)
+
+    def test_multiple_pairs(self) -> None:
+        """Test finding multiple correlated pairs."""
+        corr_matrix: npt.NDArray[np.float64] = np.array(
+            [[1.0, 0.9, 0.85], [0.9, 1.0, 0.88], [0.85, 0.88, 1.0]]
+        )
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.8, anto=False)
+        self.assertEqual(len(pairs), 3)
+
+    def test_excludes_diagonal(self) -> None:
+        """Test that diagonal elements are not included as pairs."""
+        corr_matrix: npt.NDArray[np.float64] = np.array([[1.0, 0.5], [0.5, 1.0]])
+        pairs: npt.NDArray[np.intp] = get_highly_correlated_pairs(corr_matrix, critval=0.99, anto=False)
+        self.assertEqual(len(pairs), 0)
+
+
+class TestComputePersonCorrelations(unittest.TestCase):
+    """Test suite for the compute_person_correlations helper function."""
+
+    def test_perfect_positive_correlation(self) -> None:
+        """Test computation with perfectly correlated responses."""
+        response_i: npt.NDArray[np.float64] = np.array([[1, 2, 3], [4, 5, 6]])
+        response_j: npt.NDArray[np.float64] = np.array([[2, 4, 6], [8, 10, 12]])
+        result: npt.NDArray[np.float64] = compute_person_correlations(response_i, response_j)
+        self.assertEqual(result.shape, (2, 3))
+
+    def test_empty_input(self) -> None:
+        """Test with empty input arrays."""
+        response_i: npt.NDArray[np.float64] = np.array([]).reshape(0, 3)
+        response_j: npt.NDArray[np.float64] = np.array([]).reshape(0, 3)
+        result: npt.NDArray[np.float64] = compute_person_correlations(response_i, response_j)
+        self.assertEqual(len(result), 0)
+
+    def test_single_person(self) -> None:
+        """Test correlation computation for single person."""
+        response_i: npt.NDArray[np.float64] = np.array([[1, 2, 3, 4]])
+        response_j: npt.NDArray[np.float64] = np.array([[2, 3, 4, 5]])
+        result: npt.NDArray[np.float64] = compute_person_correlations(response_i, response_j)
+        self.assertEqual(result.shape[0], 1)
+
+    def test_zero_std_handling(self) -> None:
+        """Test handling of zero standard deviation (constant responses)."""
+        response_i: npt.NDArray[np.float64] = np.array([[5, 5, 5, 5]])
+        response_j: npt.NDArray[np.float64] = np.array([[3, 3, 3, 3]])
+        result: npt.NDArray[np.float64] = compute_person_correlations(response_i, response_j)
+        self.assertEqual(result.shape[0], 1)
+
+    def test_varying_correlations(self) -> None:
+        """Test with data producing varying correlations across persons."""
+        response_i: npt.NDArray[np.float64] = np.array([[1, 2, 3], [3, 2, 1]])
+        response_j: npt.NDArray[np.float64] = np.array([[1, 2, 3], [1, 2, 3]])
+        result: npt.NDArray[np.float64] = compute_person_correlations(response_i, response_j)
+        self.assertEqual(result.shape, (2, 3))
 
 
 if __name__ == "__main__":
