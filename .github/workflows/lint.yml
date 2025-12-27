@@ -24,17 +24,11 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Set up Python
-        run: uv python install 3.13
-
-      - name: Install Ruff
-        run: uv pip install ruff
-
       - name: Run Ruff linter
-        run: uv run ruff check --output-format=github .
+        run: uvx ruff check --output-format=github .
 
       - name: Run Ruff formatter check
-        run: uv run ruff format --check .
+        run: uvx ruff format --check .
 
   mypy:
     name: Type Check
@@ -53,9 +47,7 @@ jobs:
         run: uv python install 3.13
 
       - name: Install dependencies
-        run: |
-          uv sync --extra full
-          uv pip install mypy
+        run: uv sync --extra dev
 
       - name: Run mypy
         run: uv run mypy src/careless --ignore-missing-imports
@@ -77,9 +69,7 @@ jobs:
         run: uv python install 3.13
 
       - name: Install dependencies
-        run: |
-          uv sync --extra full
-          uv pip install pylint
+        run: uv sync --extra dev
 
       - name: Run Pylint
         run: uv run pylint src/careless --fail-under=8.0

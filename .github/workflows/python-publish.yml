@@ -45,9 +45,7 @@ jobs:
         run: uv build
 
       - name: Check package
-        run: |
-          uv pip install twine
-          uv run twine check dist/*
+        run: uvx twine check dist/*
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -76,10 +74,10 @@ jobs:
           path: dist/
 
       - name: Install from wheel
-        run: uv pip install dist/*.whl
+        run: uv pip install --system dist/*.whl
 
       - name: Test import
-        run: uv run python -c "import careless; print('Import successful')"
+        run: python -c "import careless; print('Import successful')"
 
   publish-testpypi:
     name: Publish to TestPyPI
