@@ -34,9 +34,7 @@ jobs:
         run: uv python install 3.13
 
       - name: Install dependencies
-        run: |
-          uv sync --extra full
-          uv pip install pip-audit
+        run: uv sync --extra dev
 
       - name: Run pip-audit
         run: uv run pip-audit --strict --desc on
@@ -73,11 +71,5 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Set up Python
-        run: uv python install 3.13
-
-      - name: Install Bandit
-        run: uv pip install "bandit[toml]"
-
       - name: Run Bandit
-        run: uv run bandit -r src/careless -c pyproject.toml || uv run bandit -r src/careless -ll
+        run: uvx bandit -r src/careless -c pyproject.toml || uvx bandit -r src/careless -ll
