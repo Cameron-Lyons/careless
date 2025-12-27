@@ -67,11 +67,11 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Install from wheel
-        run: uv pip install --system dist/*.whl
-
-      - name: Test import
-        run: python -c "import careless; print('Import successful')"
+      - name: Install and test import
+        run: |
+          uv venv
+          uv pip install dist/*.whl
+          uv run python -c "import careless; print('Import successful')"
 
   publish-testpypi:
     name: Publish to TestPyPI
