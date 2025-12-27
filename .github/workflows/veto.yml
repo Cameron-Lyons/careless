@@ -26,5 +26,16 @@ jobs:
     name: Veto
     runs-on: ubuntu-latest
     needs: [ci, lint, security]
+    if: always()
     steps:
-      - run: echo "All checks passed"
+      - name: Check results
+        run: |
+          if [[ "${{ needs.ci.result }}" != "success" ]] || \
+             [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "CI: ${{ needs.ci.result }}"
+            echo "Lint: ${{ needs.lint.result }}"
+            echo "Security: ${{ needs.security.result }}"
+            exit 1
+          fi
+          echo "All checks passed"
