@@ -33,11 +33,11 @@ jobs:
       - name: Set up Python
         run: uv python install 3.13
 
-      - name: Install dependencies
-        run: uv sync --extra dev
+      - name: Export dependencies
+        run: uv export --no-hashes --no-emit-project > requirements.txt
 
       - name: Run pip-audit
-        run: uv run pip-audit --strict --desc on --skip-editable
+        run: uvx pip-audit --strict --desc on -r requirements.txt
 
   codeql:
     name: CodeQL Analysis
