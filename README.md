@@ -20,20 +20,47 @@ The `careless` package provides solutions designed to detect such careless/insuf
 
 ### From PyPI (when available)
 ```bash
-pip install careless
+pip install careless-py
 ```
 
 ### From Source
 ```bash
-git clone https://github.com/Cameron-Lyons/careless.git
-cd careless
+git clone https://github.com/Cameron-Lyons/careless-py.git
+cd careless-py
 pip install -e .
 ```
 
 ### Optional Dependencies
 For enhanced functionality (e.g., advanced Mahalanobis distance methods), install with full dependencies:
 ```bash
-pip install careless[full]
+pip install careless-py[full]
+```
+
+### Using uv (Recommended for Development)
+
+This project uses [uv](https://docs.astral.sh/uv/) for fast, reproducible dependency management. Install uv first:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then clone and install:
+```bash
+git clone https://github.com/Cameron-Lyons/careless-py.git
+cd careless-py
+uv sync --extra full   # Install with all optional dependencies
+```
+
+For development with all dev tools:
+```bash
+uv sync --extra dev
+```
+
+Run commands in the virtual environment:
+```bash
+uv run pytest          # Run tests
+uv run ruff check .    # Run linter
+uv run mypy src/       # Run type checker
 ```
 
 ## Quick Start
