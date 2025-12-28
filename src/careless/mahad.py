@@ -111,7 +111,8 @@ def mahad(
 
     if x_filtered.shape[0] < x_filtered.shape[1]:
         raise ValueError(
-            f"insufficient observations ({x_filtered.shape[0]}) for dimensions ({x_filtered.shape[1]}). "
+            f"insufficient observations ({x_filtered.shape[0]}) "
+            f"for dimensions ({x_filtered.shape[1]}). "
             "Need more observations than variables."
         )
 

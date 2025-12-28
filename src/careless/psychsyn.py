@@ -84,7 +84,8 @@ def psychsyn(
           Can be a 2D list or numpy array.
     - critval: Minimum magnitude of correlation for items to be considered synonyms/antonyms.
                Default is 0.60 for synonyms, typically -0.60 for antonyms.
-    - anto: Boolean indicating whether to compute antonym scores (highly negatively correlated items).
+    - anto: Boolean indicating whether to compute antonym scores
+            (highly negatively correlated items).
     - diag: Boolean to optionally return the number of item pairs available for each observation.
     - resample_na: Boolean to indicate resampling when encountering NA for a respondent.
     - random_seed: Optional seed for random number generation when resample_na=True.
