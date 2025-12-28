@@ -20,20 +20,25 @@ jobs:
   security:
     uses: ./.github/workflows/security.yml
 
+  version-check:
+    uses: ./.github/workflows/version-check.yml
+
   veto:
     name: Veto
     runs-on: ubuntu-latest
-    needs: [ci, lint, security]
+    needs: [ci, lint, security, version-check]
     if: always()
     steps:
       - name: Check results
         run: |
           if [[ "${{ needs.ci.result }}" != "success" ]] || \
              [[ "${{ needs.lint.result }}" != "success" ]] || \
-             [[ "${{ needs.security.result }}" != "success" ]]; then
+             [[ "${{ needs.security.result }}" != "success" ]] || \
+             [[ "${{ needs.version-check.result }}" != "success" ]]; then
             echo "CI: ${{ needs.ci.result }}"
             echo "Lint: ${{ needs.lint.result }}"
             echo "Security: ${{ needs.security.result }}"
+            echo "Version Check: ${{ needs.version-check.result }}"
             exit 1
           fi
           echo "All checks passed"
