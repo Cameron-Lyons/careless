@@ -1,5 +1,6 @@
 """
-Identifies the longest string or average length of identical consecutive responses for each observation.
+Identifies the longest string or average length of identical consecutive responses
+for each observation.
 
 This module provides functions to analyze patterns in response data, particularly useful for
 detecting careless responding patterns such as straightlining (repeating the same response).

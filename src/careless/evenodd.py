@@ -64,7 +64,8 @@ def evenodd(
           Can be a 2D list or numpy array.
     - factors: List of integers specifying the length of each factor in the dataset.
                The sum of factors should equal the number of columns in x.
-    - diag: Boolean to optionally return diagnostic values (number of valid correlations per individual).
+    - diag: Boolean to optionally return diagnostic values
+            (number of valid correlations per individual).
 
     Returns:
     - A numpy array of even-odd consistency scores (average correlations per individual)

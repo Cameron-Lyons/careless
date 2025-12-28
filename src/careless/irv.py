@@ -34,7 +34,8 @@ def irv(
     - num_split: Number of equal-sized subsets to split the data into if 'split' is True.
                  Ignored if split_points is provided.
     - split_points: Optional list of column indices to use as split points. If provided,
-                   overrides num_split. For example, [0, 10, 20] would split into [0:10] and [10:20].
+                   overrides num_split. For example, [0, 10, 20] would split into
+                   [0:10] and [10:20].
 
     Returns:
     - A numpy array of IRV values for each individual.
