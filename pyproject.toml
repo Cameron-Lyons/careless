@@ -67,7 +67,6 @@ src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH"]
-ignore = ["E501"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["careless"]
@@ -89,13 +88,9 @@ warn_unreachable = true
 strict_equality = true
 extra_checks = true
 
-[tool.pylint.messages_control]
-disable = ["C0114", "C0115", "C0116", "R0913", "R0914"]
-
 [tool.pylint.format]
 max-line-length = 100
 
 [tool.bandit]
 exclude_dirs = ["tests"]
 skips = ["B101"]
-
