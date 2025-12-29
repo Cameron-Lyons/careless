@@ -102,9 +102,8 @@ def psychsyn(
         >>> data = [[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7], [1, 1, 1, 4, 5, 6]]
         >>> scores = psychsyn(data, critval=0.5)
         >>> print(scores)
-        [0.87, 0.92, 0.45]  # Third person has lower consistency
+        [0.87, 0.92, 0.45]
 
-        >>> # With diagnostic output
         >>> scores, diag = psychsyn(data, critval=0.5, diag=True)
         >>> print(f"Scores: {scores}, Pairs per person: {diag}")
     """
@@ -245,7 +244,7 @@ def psychsyn_critval(
     Example:
         >>> data = [[1, 2, 3, 4], [2, 3, 4, 5], [1, 1, 1, 4]]
         >>> pairs = psychsyn_critval(data, min_correlation=0.3)
-        >>> print(pairs[:3])  # Top 3 correlations
+        >>> print(pairs[:3])
         [(0, 1, 0.87), (1, 2, 0.82), (0, 2, 0.65)]
     """
 
@@ -319,7 +318,7 @@ def psychant(
         >>> data = [[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7], [1, 1, 1, 4, 5, 6]]
         >>> scores = psychant(data, critval=-0.5)
         >>> print(scores)
-        [0.23, 0.18, 0.45]  # Higher scores indicate inconsistent responding
+        [0.23, 0.18, 0.45]
     """
     return psychsyn(
         x, critval=critval, anto=True, diag=diag, resample_na=resample_na, random_seed=random_seed

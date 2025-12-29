@@ -95,7 +95,7 @@ def avgstr_message(message: str) -> float:
 
     Example:
         >>> avgstr_message("aaabbbcc")
-        2.67  # (3+3+2)/3
+        2.67
         >>> avgstr_message("")
         0.0
     """
@@ -139,20 +139,16 @@ def longstring(
     - ValueError: If input is empty or contains invalid data
 
     Example:
-        >>> # Single string - longest run
         >>> longstring("aaabbbcc")
         ('a', 3)
 
-        >>> # Single string - average run length
         >>> longstring("aaabbbcc", avg=True)
         2.67
 
-        >>> # Multiple strings
         >>> data = ["aaabbb", "cccc", "abc"]
         >>> longstring(data)
         [('a', 3), ('c', 4), ('a', 1)]
 
-        >>> # With numpy array
         >>> import numpy as np
         >>> arr = np.array(["aaabbb", "cccc", "abc"])
         >>> longstring(arr, avg=True)
