@@ -27,6 +27,7 @@ dev = [
   "pylint>=2.0.0",
   "bandit>=1.6.0",
   "pip-audit>=1.0.0",
+  "hypothesis>=6.0.0",
 ]
 
 [tool.setuptools]

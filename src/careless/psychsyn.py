@@ -186,21 +186,41 @@ def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
     - Array with resampled values replacing NaN
     """
     result = person_corrs.copy()
+    n_persons, n_pairs = result.shape
 
-    for person_index in range(result.shape[0]):
-        person_row = result[person_index]
+    missing_mask = np.isnan(result)
+    all_nan_rows = missing_mask.all(axis=1)
+    has_some_valid = ~all_nan_rows & missing_mask.any(axis=1)
 
-        if np.isnan(person_row).all():
-            overall_mean = np.abs(np.nanmean(result))
-            result[person_index] = np.random.choice([-1, 1], size=len(person_row)) * overall_mean
-        else:
-            valid_corrs = person_row[~np.isnan(person_row)]
-            if valid_corrs.size > 0:
-                abs_mean_corr = np.abs(np.mean(valid_corrs))
-                missing_mask = np.isnan(person_row)
-                result[person_index][missing_mask] = (
-                    np.random.choice([-1, 1], size=missing_mask.sum()) * abs_mean_corr
-                )
+    with np.errstate(invalid="ignore"):
+        row_means = np.abs(np.nanmean(result, axis=1))
+
+    overall_mean = np.abs(np.nanmean(result))
+    row_means[all_nan_rows] = overall_mean if not np.isnan(overall_mean) else 0.0
+
+    total_missing = missing_mask.sum()
+    if total_missing > 0:
+        random_signs = np.random.choice([-1, 1], size=total_missing)
+
+        if all_nan_rows.any():
+            all_nan_count = all_nan_rows.sum() * n_pairs
+            result[all_nan_rows] = (
+                random_signs[:all_nan_count].reshape(-1, n_pairs) * row_means[all_nan_rows, np.newaxis]
+            )
+            random_signs = random_signs[all_nan_count:]
+
+        if has_some_valid.any():
+            partial_missing_mask = missing_mask & has_some_valid[:, np.newaxis]
+            partial_missing_counts = partial_missing_mask.sum(axis=1)
+
+            idx = 0
+            for person_idx in np.where(has_some_valid)[0]:
+                count = partial_missing_counts[person_idx]
+                if count > 0:
+                    result[person_idx, missing_mask[person_idx]] = (
+                        random_signs[idx : idx + count] * row_means[person_idx]
+                    )
+                    idx += count
 
     return result
 
@@ -247,18 +267,25 @@ def psychsyn_critval(
         raise ValueError("data must have at least 2 columns (items)")
 
     item_correlations = np.corrcoef(x_array, rowvar=False)
+    n_items = item_correlations.shape[0]
 
-    correlation_list = []
-    for i in range(item_correlations.shape[0]):
-        for j in range(i + 1, item_correlations.shape[1]):
-            corr = item_correlations[i, j]
-            if not np.isnan(corr) and abs(corr) >= min_correlation:
-                correlation_list.append((i, j, corr))
+    i_indices, j_indices = np.triu_indices(n_items, k=1)
+    corr_values = item_correlations[i_indices, j_indices]
+
+    valid_mask = ~np.isnan(corr_values) & (np.abs(corr_values) >= min_correlation)
+    i_filtered = i_indices[valid_mask]
+    j_filtered = j_indices[valid_mask]
+    corr_filtered = corr_values[valid_mask]
 
     if anto:
-        correlation_list.sort(key=lambda x: x[2])
+        sort_indices = np.argsort(corr_filtered)
     else:
-        correlation_list.sort(key=lambda x: -x[2])
+        sort_indices = np.argsort(-corr_filtered)
+
+    correlation_list: list[tuple[int, int, float]] = [
+        (int(i_filtered[idx]), int(j_filtered[idx]), float(corr_filtered[idx]))
+        for idx in sort_indices
+    ]
 
     return correlation_list
 

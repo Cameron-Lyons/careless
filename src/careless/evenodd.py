@@ -25,27 +25,32 @@ def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.nd
     if min_cols == 0:
         return np.full(num_individuals, np.nan)
 
-    correlations = np.zeros(num_individuals)
+    even_vals = even_cols[:, :min_cols]
+    odd_vals = odd_cols[:, :min_cols]
 
-    for i in range(num_individuals):
-        even_vals = even_cols[i, :min_cols]
-        odd_vals = odd_cols[i, :min_cols]
+    valid_mask = ~(np.isnan(even_vals) | np.isnan(odd_vals))
+    valid_counts = valid_mask.sum(axis=1)
 
-        valid_mask = ~(np.isnan(even_vals) | np.isnan(odd_vals))
-        if np.sum(valid_mask) < 2:
-            correlations[i] = np.nan
-        else:
-            even_clean = even_vals[valid_mask]
-            odd_clean = odd_vals[valid_mask]
+    even_masked = np.where(valid_mask, even_vals, 0.0)
+    odd_masked = np.where(valid_mask, odd_vals, 0.0)
 
-            if len(even_clean) < 2:
-                correlations[i] = np.nan
-            else:
-                try:
-                    corr_matrix = np.corrcoef(even_clean, odd_clean)
-                    correlations[i] = corr_matrix[0, 1] if not np.isnan(corr_matrix[0, 1]) else 0
-                except Exception:
-                    correlations[i] = np.nan
+    with np.errstate(invalid="ignore", divide="ignore"):
+        even_mean = even_masked.sum(axis=1) / valid_counts
+        odd_mean = odd_masked.sum(axis=1) / valid_counts
+
+    even_centered = np.where(valid_mask, even_vals - even_mean[:, np.newaxis], 0.0)
+    odd_centered = np.where(valid_mask, odd_vals - odd_mean[:, np.newaxis], 0.0)
+
+    cov = (even_centered * odd_centered).sum(axis=1)
+    even_std = np.sqrt((even_centered**2).sum(axis=1))
+    odd_std = np.sqrt((odd_centered**2).sum(axis=1))
+
+    with np.errstate(invalid="ignore", divide="ignore"):
+        correlations = cov / (even_std * odd_std)
+
+    correlations = np.clip(correlations, -1.0, 1.0)
+    correlations = np.where(valid_counts < 2, np.nan, correlations)
+    correlations = np.where(np.isnan(correlations) & (valid_counts >= 2), 0.0, correlations)
 
     return correlations
 
