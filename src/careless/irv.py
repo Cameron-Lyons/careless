@@ -45,20 +45,17 @@ def irv(
 
     Example:
         >>> data = [[1, 2, 3, 4, 5, 6], [1, 1, 1, 4, 5, 6]]
-        >>> # Calculate IRV across all items
         >>> irv_scores = irv(data)
         >>> print(irv_scores)
-        [1.87, 2.16]  # Second person has higher variability
+        [1.87, 2.16]
 
-        >>> # Calculate IRV with splits
         >>> irv_split = irv(data, split=True, num_split=2)
         >>> print(irv_split)
-        [1.87, 2.16]  # Mean IRV across splits
+        [1.87, 2.16]
 
-        >>> # Use custom split points
         >>> irv_custom = irv(data, split=True, split_points=[0, 3, 6])
         >>> print(irv_custom)
-        [1.87, 2.16]  # Mean IRV across custom splits
+        [1.87, 2.16]
     """
 
     if (

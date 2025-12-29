@@ -22,7 +22,6 @@ from careless.mahad import mahad
 from careless.psychsyn import psychsyn
 
 
-# Custom strategies for generating valid test data
 def valid_survey_data(
     min_rows: int = 3, max_rows: int = 50, min_cols: int = 2, max_cols: int = 20
 ) -> st.SearchStrategy[np.ndarray]:
@@ -110,7 +109,6 @@ class TestIRVProperties:
     @settings(max_examples=50)
     def test_irv_constant_rows_zero(self, data: np.ndarray) -> None:
         """Rows with constant values should have IRV of 0."""
-        # Make all rows constant
         constant_data = np.ones_like(data) * 5
         result = irv(constant_data)
         np.testing.assert_array_almost_equal(result, np.zeros(data.shape[0]))
@@ -146,9 +144,7 @@ class TestMahadProperties:
     @settings(max_examples=30)
     def test_mahad_non_negative(self, data: np.ndarray) -> None:
         """Mahalanobis distances should always be non-negative."""
-        # Add some variance to avoid singular covariance matrix
         data = data + np.random.randn(*data.shape) * 0.1
-        # Ensure we have more rows than columns
         assume(data.shape[0] > data.shape[1])
         result = mahad(data)
         assert len(result) == data.shape[0]
@@ -188,7 +184,7 @@ class TestEvenOddProperties:
     @settings(max_examples=30)
     def test_evenodd_output_length(self, data: np.ndarray) -> None:
         """Even-odd should return one score per individual."""
-        factors = [6, 6]  # Two factors of 6 items each
+        factors = [6, 6]
         result = evenodd(data, factors)
         assert len(result) == data.shape[0]
 
@@ -210,15 +206,13 @@ class TestEvenOddProperties:
     @given(st.integers(min_value=2, max_value=10))
     def test_evenodd_perfect_consistency(self, n_individuals: int) -> None:
         """Perfectly consistent responses should have high correlations."""
-        # Create data where even and odd items are perfectly correlated
         data = np.zeros((n_individuals, 8))
         for i in range(n_individuals):
             pattern = np.arange(1, 5)
-            data[i, 0::2] = pattern  # Even indices
-            data[i, 1::2] = pattern  # Odd indices (same as even)
+            data[i, 0::2] = pattern
+            data[i, 1::2] = pattern
         factors = [8]
         result = evenodd(data, factors)
-        # All should be perfectly correlated (r=1)
         np.testing.assert_array_almost_equal(result, np.ones(n_individuals))
 
 
@@ -240,7 +234,6 @@ class TestPsychsynProperties:
         with np.errstate(invalid="ignore", divide="ignore"):
             _, diag_low = psychsyn(data, critval=0.2, diag=True)
             _, diag_high = psychsyn(data, critval=0.8, diag=True)
-        # Lower threshold should find >= pairs for each person
         assert np.all(diag_low >= diag_high)
 
     @given(valid_survey_data(min_rows=5, max_rows=20, min_cols=4, max_cols=8))
@@ -262,21 +255,17 @@ class TestCrossModuleProperties:
         """All main functions should handle the same valid data without errors."""
         assume(data.shape[0] > data.shape[1])
 
-        # IRV
         irv_result = irv(data)
         assert len(irv_result) == data.shape[0]
 
-        # Mahad (with perturbation for numerical stability)
         perturbed_data = data + np.random.randn(*data.shape) * 0.01
         mahad_result = mahad(perturbed_data)
         assert len(mahad_result) == data.shape[0]
 
-        # Psychsyn
         with np.errstate(invalid="ignore", divide="ignore"):
             psychsyn_result = psychsyn(data, critval=0.3)
         assert len(psychsyn_result) == data.shape[0]
 
-        # Evenodd (if columns divisible by factor)
         if data.shape[1] % 2 == 0:
             factors = [data.shape[1]]
             evenodd_result = evenodd(data, factors)

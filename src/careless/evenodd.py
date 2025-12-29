@@ -81,10 +81,10 @@ def evenodd(
 
     Example:
         >>> data = [[1, 2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7]]
-        >>> factors = [4, 2]  # First factor has 4 items, second has 2
+        >>> factors = [4, 2]
         >>> scores = evenodd(data, factors)
         >>> print(scores)
-        [0.5, 0.5]  # Average correlations for each individual
+        [0.5, 0.5]
     """
 
     if not factors:

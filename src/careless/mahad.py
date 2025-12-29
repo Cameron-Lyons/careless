@@ -19,7 +19,7 @@ import numpy as np
 SCIPY_AVAILABLE = False
 stats: Any = None
 try:
-    import scipy.stats as stats  # type: ignore[no-redef]
+    import scipy.stats as stats
 
     SCIPY_AVAILABLE = True
 except ImportError:
@@ -64,12 +64,11 @@ def mahad(
         >>> data = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 1, 1]]
         >>> distances = mahad(data)
         >>> print(distances)
-        [0.87, 0.87, 0.87, 2.60]  # Last observation is an outlier
+        [0.87, 0.87, 0.87, 2.60]
 
-        >>> # With outlier flagging
         >>> distances, flags = mahad(data, flag=True, confidence=0.95)
         >>> print(flags)
-        [False, False, False, True]  # Last observation flagged as outlier
+        [False, False, False, True]
     """
 
     if x is None:
