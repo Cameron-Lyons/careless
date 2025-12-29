@@ -382,7 +382,7 @@ class TestCalculateCorrelations(unittest.TestCase):
         odd_cols: npt.NDArray[np.float64] = np.array([[2, 4, 6], [3, 5, 7]])
         result: npt.NDArray[np.float64] = calculate_correlations(even_cols, odd_cols)
         self.assertEqual(len(result), 2)
-        self.assertTrue(np.all(result == 1.0))
+        np.testing.assert_almost_equal(result, [1.0, 1.0])
 
     def test_negative_correlation(self) -> None:
         """Test correlation calculation with negatively correlated data."""
