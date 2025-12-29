@@ -204,7 +204,8 @@ def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
         if all_nan_rows.any():
             all_nan_count = all_nan_rows.sum() * n_pairs
             result[all_nan_rows] = (
-                random_signs[:all_nan_count].reshape(-1, n_pairs) * row_means[all_nan_rows, np.newaxis]
+                random_signs[:all_nan_count].reshape(-1, n_pairs)
+                * row_means[all_nan_rows, np.newaxis]
             )
             random_signs = random_signs[all_nan_count:]
 
@@ -276,10 +277,7 @@ def psychsyn_critval(
     j_filtered = j_indices[valid_mask]
     corr_filtered = corr_values[valid_mask]
 
-    if anto:
-        sort_indices = np.argsort(corr_filtered)
-    else:
-        sort_indices = np.argsort(-corr_filtered)
+    sort_indices = np.argsort(corr_filtered) if anto else np.argsort(-corr_filtered)
 
     correlation_list: list[tuple[int, int, float]] = [
         (int(i_filtered[idx]), int(j_filtered[idx]), float(corr_filtered[idx]))
