@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "careless-py"
-version = "1.0.2"
+version = "1.0.3"
 authors = [{ name = "Cameron Lyons", email = "cameron.lyons2@gmail.com" }]
 description = "Python version of R careless package"
 readme = "README.md"

@@ -19,8 +19,9 @@ import numpy as np
 SCIPY_AVAILABLE = False
 stats: Any = None
 try:
-    import scipy.stats as stats
+    from scipy import stats as _stats
 
+    stats = _stats
     SCIPY_AVAILABLE = True
 except ImportError:
     pass
