@@ -14,6 +14,9 @@ from typing import Any
 
 import numpy as np
 
+from careless._summary import calculate_summary_stats
+from careless._validation import validate_matrix_input
+
 
 def get_highly_correlated_pairs(
     item_correlations: np.ndarray, critval: float, anto: bool
@@ -108,22 +111,7 @@ def psychsyn(
         >>> print(f"Scores: {scores}, Pairs per person: {diag}")
     """
 
-    if x is None:
-        raise ValueError("input data cannot be None")
-
-    if not isinstance(x, (list, np.ndarray)):
-        raise TypeError("input data must be a list or numpy array")
-
-    x_array = np.asarray(x)
-
-    if x_array.ndim != 2:
-        raise ValueError("input data must be 2-dimensional")
-
-    if x_array.shape[0] == 0 or x_array.shape[1] == 0:
-        raise ValueError("input data cannot be empty")
-
-    if x_array.shape[1] < 2:
-        raise ValueError("data must have at least 2 columns (items)")
+    x_array = validate_matrix_input(x, min_columns=2)
 
     if not isinstance(critval, (int, float)):
         raise ValueError("critval must be a number")
@@ -249,22 +237,7 @@ def psychsyn_critval(
         [(0, 1, 0.87), (1, 2, 0.82), (0, 2, 0.65)]
     """
 
-    if x is None:
-        raise ValueError("input data cannot be None")
-
-    if not isinstance(x, (list, np.ndarray)):
-        raise TypeError("input data must be a list or numpy array")
-
-    x_array = np.asarray(x)
-
-    if x_array.ndim != 2:
-        raise ValueError("input data must be 2-dimensional")
-
-    if x_array.shape[0] == 0 or x_array.shape[1] == 0:
-        raise ValueError("input data cannot be empty")
-
-    if x_array.shape[1] < 2:
-        raise ValueError("data must have at least 2 columns (items)")
+    x_array = validate_matrix_input(x, min_columns=2)
 
     item_correlations = np.corrcoef(x_array, rowvar=False)
     n_items = item_correlations.shape[0]
@@ -344,36 +317,21 @@ def psychsyn_summary(
         {'mean_score': 0.75, 'std_score': 0.24, 'item_pairs': 3, ...}
     """
 
-    scores, diag = psychsyn(x, critval=critval, anto=anto, diag=True)
+    scores, _ = psychsyn(x, critval=critval, anto=anto, diag=True)
 
     x_array = np.asarray(x)
     item_correlations = np.corrcoef(x_array, rowvar=False)
     item_correlations[np.isnan(item_correlations)] = 0
     item_pairs = get_highly_correlated_pairs(item_correlations, critval, anto)
 
-    valid_scores = scores[~np.isnan(scores)]
-
-    if len(valid_scores) == 0:
-        return {
-            "mean_score": np.nan,
-            "std_score": np.nan,
-            "min_score": np.nan,
-            "max_score": np.nan,
-            "median_score": np.nan,
+    valid_count = int(np.sum(~np.isnan(scores)))
+    summary = calculate_summary_stats(scores, suffix="_score")
+    summary.update(
+        {
             "item_pairs": len(item_pairs),
             "total_individuals": len(scores),
-            "valid_individuals": 0,
-            "missing_individuals": len(scores),
+            "valid_individuals": valid_count,
+            "missing_individuals": len(scores) - valid_count,
         }
-
-    return {
-        "mean_score": float(np.mean(valid_scores)),
-        "std_score": float(np.std(valid_scores)),
-        "min_score": float(np.min(valid_scores)),
-        "max_score": float(np.max(valid_scores)),
-        "median_score": float(np.median(valid_scores)),
-        "item_pairs": len(item_pairs),
-        "total_individuals": len(scores),
-        "valid_individuals": len(valid_scores),
-        "missing_individuals": int(np.sum(np.isnan(scores))),
-    }
+    )
+    return summary

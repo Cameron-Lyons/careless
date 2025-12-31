@@ -16,6 +16,9 @@ from typing import Any
 
 import numpy as np
 
+from careless._summary import calculate_summary_stats
+from careless._validation import validate_matrix_input
+
 SCIPY_AVAILABLE = False
 stats: Any = None
 try:
@@ -72,19 +75,7 @@ def mahad(
         [False, False, False, True]
     """
 
-    if x is None:
-        raise ValueError("input data cannot be None")
-
-    if not isinstance(x, (list, np.ndarray)):
-        raise TypeError("input data must be a list or numpy array")
-
-    x_array = np.asarray(x)
-
-    if x_array.ndim != 2:
-        raise ValueError("input data must be 2-dimensional")
-
-    if x_array.shape[0] == 0 or x_array.shape[1] == 0:
-        raise ValueError("input data cannot be empty")
+    x_array = validate_matrix_input(x)
 
     if confidence < 0 or confidence > 1:
         raise ValueError("confidence must be between 0 and 1")
@@ -171,8 +162,6 @@ def _flag_outliers(
     - Boolean array indicating outliers
     """
     if method == "chi2":
-        if not SCIPY_AVAILABLE:
-            raise RuntimeError("scipy is required for chi2 method. Install with: pip install scipy")
         threshold: float = stats.chi2.ppf(confidence, df=n_features)
         result: np.ndarray = distances > np.sqrt(threshold)
         return result
@@ -240,29 +229,14 @@ def mahad_summary(
 
     distances, flags = mahad(x, flag=True, confidence=confidence, na_rm=na_rm)
 
-    valid_distances = distances[~np.isnan(distances)]
-
-    if len(valid_distances) == 0:
-        return {
-            "mean": np.nan,
-            "std": np.nan,
-            "min": np.nan,
-            "max": np.nan,
-            "median": np.nan,
-            "outliers": 0,
+    valid_count = int(np.sum(~np.isnan(distances)))
+    stats = calculate_summary_stats(distances)
+    stats.update(
+        {
+            "outliers": int(np.sum(flags)) if valid_count > 0 else 0,
             "total": len(distances),
-            "valid_count": 0,
-            "missing_count": np.sum(np.isnan(distances)),
+            "valid_count": valid_count,
+            "missing_count": int(np.sum(np.isnan(distances))),
         }
-
-    return {
-        "mean": float(np.mean(valid_distances)),
-        "std": float(np.std(valid_distances)),
-        "min": float(np.min(valid_distances)),
-        "max": float(np.max(valid_distances)),
-        "median": float(np.median(valid_distances)),
-        "outliers": int(np.sum(flags)),
-        "total": len(distances),
-        "valid_count": len(valid_distances),
-        "missing_count": int(np.sum(np.isnan(distances))),
-    }
+    )
+    return stats
