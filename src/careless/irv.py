@@ -10,6 +10,8 @@ persons with high IRV scores - reflecting highly random responses
 
 import numpy as np
 
+from careless._validation import validate_matrix_input
+
 
 def irv(
     x: list[list[float]] | np.ndarray,
@@ -58,20 +60,7 @@ def irv(
         [1.87, 2.16]
     """
 
-    if (
-        x is None
-        or (isinstance(x, np.ndarray) and x.size == 0)
-        or (not isinstance(x, np.ndarray) and len(x) == 0)
-    ):
-        raise ValueError("input data cannot be empty")
-
-    x_array = np.array(x)
-
-    if x_array.ndim != 2:
-        raise ValueError("input data must be 2-dimensional")
-
-    if x_array.shape[0] == 0 or x_array.shape[1] == 0:
-        raise ValueError("input data must have at least one row and one column")
+    x_array = validate_matrix_input(x, check_type=False)
 
     if split_points is not None:
         if not isinstance(split_points, list) or len(split_points) < 2:

@@ -4,6 +4,8 @@ import warnings
 
 import numpy as np
 
+from careless._validation import validate_matrix_input
+
 
 def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.ndarray:
     """
@@ -90,20 +92,7 @@ def evenodd(
     if not factors:
         raise ValueError("factors list cannot be empty")
 
-    if x is None:
-        raise ValueError("input data cannot be None")
-
-    if isinstance(x, np.ndarray) and x.size == 0:
-        raise ValueError("input data cannot be empty")
-
-    if isinstance(x, list) and len(x) == 0:
-        raise ValueError("input data cannot be empty")
-
-    x_array = np.array(x, dtype=float)
-    if x_array.ndim == 1:
-        x_array = x_array.reshape(1, -1)
-    if x_array.ndim != 2:
-        raise ValueError("input data must be 2-dimensional")
+    x_array = validate_matrix_input(x, allow_1d=True, dtype=float, check_type=False)
     num_individuals = x_array.shape[0]
 
     expected_cols = sum(factors)
