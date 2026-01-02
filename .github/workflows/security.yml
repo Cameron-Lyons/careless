@@ -65,4 +65,4 @@ jobs:
           enable-cache: true
 
       - name: Run Bandit
-        run: uvx bandit -r src/careless -c pyproject.toml || uvx bandit -r src/careless -ll
+        run: uvx bandit -r src/ier -c pyproject.toml || uvx bandit -r src/ier -ll
