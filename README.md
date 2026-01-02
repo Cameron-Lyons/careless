@@ -19,7 +19,7 @@ The `ier` package provides solutions designed to detect such insufficient effort
 
 ### From PyPI
 ```bash
-pip install ier
+pip install insufficient-effort
 ```
 
 ### From Source
@@ -32,7 +32,7 @@ pip install -e .
 ### Optional Dependencies
 For enhanced functionality (e.g., chi-squared outlier detection):
 ```bash
-pip install ier[full]
+pip install insufficient-effort[full]
 ```
 
 ## Quick Start
