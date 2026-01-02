@@ -4,7 +4,7 @@ import warnings
 
 import numpy as np
 
-from careless._validation import validate_matrix_input
+from careless._validation import MatrixLike, validate_matrix_input
 
 
 def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.ndarray:
@@ -58,7 +58,7 @@ def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.nd
 
 
 def evenodd(
-    x: list[list[float]] | np.ndarray, factors: list[int], diag: bool = False
+    x: MatrixLike, factors: list[int], diag: bool = False
 ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
     """
     Calculate even-odd consistency scores for each individual based on the provided factors.

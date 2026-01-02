@@ -17,7 +17,7 @@ from typing import Any
 import numpy as np
 
 from careless._summary import calculate_summary_stats
-from careless._validation import validate_matrix_input
+from careless._validation import MatrixLike, validate_matrix_input
 
 SCIPY_AVAILABLE = False
 stats: Any = None
@@ -31,7 +31,7 @@ except ImportError:
 
 
 def mahad(
-    x: list[list[float]] | np.ndarray,
+    x: MatrixLike,
     flag: bool = False,
     confidence: float = 0.95,
     na_rm: bool = False,
@@ -214,9 +214,7 @@ def _flag_outliers(
         raise ValueError(f"unknown method: {method}")
 
 
-def mahad_summary(
-    x: list[list[float]] | np.ndarray, confidence: float = 0.95, na_rm: bool = False
-) -> dict[str, Any]:
+def mahad_summary(x: MatrixLike, confidence: float = 0.95, na_rm: bool = False) -> dict[str, Any]:
     """
     Calculate summary statistics for Mahalanobis distances.
 

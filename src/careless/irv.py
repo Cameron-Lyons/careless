@@ -10,11 +10,11 @@ persons with high IRV scores - reflecting highly random responses
 
 import numpy as np
 
-from careless._validation import validate_matrix_input
+from careless._validation import MatrixLike, validate_matrix_input
 
 
 def irv(
-    x: list[list[float]] | np.ndarray,
+    x: MatrixLike,
     na_rm: bool = True,
     split: bool = False,
     num_split: int = 1,
@@ -88,27 +88,19 @@ def irv(
         return result
 
     if split_points is not None:
-        irvs_splits = []
-        for i in range(len(split_points) - 1):
-            start_col = split_points[i]
-            end_col = split_points[i + 1]
-            if end_col > start_col:
-                irv_split = std_func(x_array[:, start_col:end_col], axis=1)
-                irvs_splits.append(irv_split)
+        chunks = [
+            x_array[:, split_points[i] : split_points[i + 1]]
+            for i in range(len(split_points) - 1)
+            if split_points[i + 1] > split_points[i]
+        ]
     else:
-        num_cols = x_array.shape[1]
-        chunk_size = max(1, num_cols // num_split)
+        chunks = np.array_split(x_array, num_split, axis=1)
 
-        irvs_splits = []
-        for i in range(0, num_cols, chunk_size):
-            end_col = min(i + chunk_size, num_cols)
-            if end_col > i:
-                irv_split = std_func(x_array[:, i:end_col], axis=1)
-                irvs_splits.append(irv_split)
+    if chunks:
+        irvs_splits = [std_func(chunk, axis=1) for chunk in chunks if chunk.size > 0]
+        if irvs_splits:
+            split_result: np.ndarray = np.mean(irvs_splits, axis=0)
+            return split_result
 
-    if irvs_splits:
-        split_result: np.ndarray = np.mean(irvs_splits, axis=0)
-        return split_result
-    else:
-        fallback: np.ndarray = std_func(x_array, axis=1)
-        return fallback
+    fallback: np.ndarray = std_func(x_array, axis=1)
+    return fallback
