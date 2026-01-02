@@ -1,4 +1,4 @@
-"""Careless: Python implementation of the R careless package for detecting careless responding."""
+"""IER: Python library for detecting Insufficient Effort Responding in survey data."""
 
 from ._validation import MatrixLike as MatrixLike
 from .evenodd import evenodd as evenodd

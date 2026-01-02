@@ -14,8 +14,8 @@ from typing import Any
 
 import numpy as np
 
-from careless._summary import calculate_summary_stats
-from careless._validation import MatrixLike, validate_matrix_input
+from ier._summary import calculate_summary_stats
+from ier._validation import MatrixLike, validate_matrix_input
 
 
 def get_highly_correlated_pairs(

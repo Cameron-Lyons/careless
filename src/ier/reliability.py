@@ -9,7 +9,7 @@ import warnings
 
 import numpy as np
 
-from careless._validation import MatrixLike, validate_matrix_input
+from ier._validation import MatrixLike, validate_matrix_input
 
 
 def individual_reliability(

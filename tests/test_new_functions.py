@@ -1,19 +1,19 @@
-"""Unit tests for new careless detection functions."""
+"""Unit tests for new IER detection functions."""
 
 import unittest
 
 import numpy as np
 
-from careless.guttman import guttman, guttman_flag
-from careless.person_total import person_total
-from careless.reliability import individual_reliability, individual_reliability_flag
-from careless.response_time import (
+from ier.guttman import guttman, guttman_flag
+from ier.person_total import person_total
+from ier.reliability import individual_reliability, individual_reliability_flag
+from ier.response_time import (
     response_time,
     response_time_consistency,
     response_time_flag,
 )
-from careless.semantic import semantic_ant, semantic_syn
-from careless.u3_poly import midpoint_responding, response_pattern, u3_poly
+from ier.semantic import semantic_ant, semantic_syn
+from ier.u3_poly import midpoint_responding, response_pattern, u3_poly
 
 
 class TestPersonTotal(unittest.TestCase):

@@ -4,7 +4,7 @@ import warnings
 
 import numpy as np
 
-from careless._validation import MatrixLike, validate_matrix_input
+from ier._validation import MatrixLike, validate_matrix_input
 
 
 def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.ndarray:

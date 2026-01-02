@@ -1,6 +1,6 @@
-"""Unit tests for the careless library.
+"""Unit tests for the ier library.
 
-This module contains comprehensive unit tests for all functions in the careless
+This module contains comprehensive unit tests for all functions in the ier
 library, including longstring, IRV, MAHAD, even-odd, and psychometric synonym
 detection functions.
 """
@@ -12,17 +12,17 @@ import numpy as np
 import numpy.typing as npt
 import scipy.stats as stats
 
-from careless.evenodd import calculate_correlations, evenodd
-from careless.irv import irv
-from careless.longstring import (
+from ier.evenodd import calculate_correlations, evenodd
+from ier.irv import irv
+from ier.longstring import (
     avgstr_message,
     longstr_message,
     longstring,
     run_length_decode,
     run_length_encode,
 )
-from careless.mahad import mahad, mahad_summary
-from careless.psychsyn import (
+from ier.mahad import mahad, mahad_summary
+from ier.psychsyn import (
     compute_person_correlations,
     get_highly_correlated_pairs,
     psychant,

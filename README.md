@@ -1,12 +1,12 @@
-# Careless
+# IER
 
-A Python package for detecting careless responding in survey data using various statistical indices and methods.
+A Python package for detecting Insufficient Effort Responding (IER) in survey data using various statistical indices and methods.
 
 ## Overview
 
-When taking online surveys, participants sometimes respond to items without regard to their content. These types of responses, referred to as **careless** or **insufficient effort responding**, constitute significant problems for data quality, leading to distortions in data analysis and hypothesis testing, such as spurious correlations.
+When taking online surveys, participants sometimes respond to items without regard to their content. These types of responses, referred to as **insufficient effort responding** (IER) or **careless responding**, constitute significant problems for data quality, leading to distortions in data analysis and hypothesis testing, such as spurious correlations.
 
-The `careless` package provides solutions designed to detect such careless/insufficient effort responses by allowing easy calculation of indices proposed in the literature. For a comprehensive review of these methods, see [Curran (2016)](https://www.sciencedirect.com/science/article/abs/pii/S0022103115000931?via%3Dihub).
+The `ier` package provides solutions designed to detect such insufficient effort responses by allowing easy calculation of indices proposed in the literature. For a comprehensive review of these methods, see [Curran (2016)](https://www.sciencedirect.com/science/article/abs/pii/S0022103115000931?via%3Dihub).
 
 ## Features
 
@@ -18,22 +18,22 @@ The `careless` package provides solutions designed to detect such careless/insuf
 
 ## Installation
 
-### From PyPI (when available)
+### From PyPI
 ```bash
-pip install careless-py
+pip install ier
 ```
 
 ### From Source
 ```bash
-git clone https://github.com/Cameron-Lyons/careless-py.git
-cd careless-py
+git clone https://github.com/Cameron-Lyons/ier.git
+cd ier
 pip install -e .
 ```
 
 ### Optional Dependencies
 For enhanced functionality (e.g., advanced Mahalanobis distance methods), install with full dependencies:
 ```bash
-pip install careless-py[full]
+pip install ier[full]
 ```
 
 ### Using uv (Recommended for Development)
@@ -46,8 +46,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Then clone and install:
 ```bash
-git clone https://github.com/Cameron-Lyons/careless-py.git
-cd careless-py
+git clone https://github.com/Cameron-Lyons/ier.git
+cd ier
 uv sync --extra full   # Install with all optional dependencies
 ```
 
@@ -67,7 +67,7 @@ uv run mypy src/       # Run type checker
 
 ```python
 import numpy as np
-from careless import evenodd, irv, longstring, mahad, psychsyn
+from ier import evenodd, irv, longstring, mahad, psychsyn
 
 # Sample survey data (rows = participants, columns = items)
 data = np.array([
@@ -265,11 +265,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use this package in your research, please cite:
 
 ```bibtex
-@software{careless2024,
-  title={Careless: Python package for detecting careless responding},
+@software{ier2024,
+  title={IER: Python package for detecting Insufficient Effort Responding},
   author={Lyons, Cameron},
   year={2024},
-  url={https://github.com/Cameron-Lyons/careless}
+  url={https://github.com/Cameron-Lyons/ier}
 }
 ```
 
