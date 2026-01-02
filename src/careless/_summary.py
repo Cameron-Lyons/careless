@@ -19,21 +19,10 @@ def calculate_summary_stats(
     Returns:
     - Dictionary with mean, std, min, max, median statistics
     """
-    valid_values = values[~np.isnan(values)]
-
-    if len(valid_values) == 0:
-        return {
-            f"mean{suffix}": np.nan,
-            f"std{suffix}": np.nan,
-            f"min{suffix}": np.nan,
-            f"max{suffix}": np.nan,
-            f"median{suffix}": np.nan,
-        }
-
     return {
-        f"mean{suffix}": float(np.mean(valid_values)),
-        f"std{suffix}": float(np.std(valid_values)),
-        f"min{suffix}": float(np.min(valid_values)),
-        f"max{suffix}": float(np.max(valid_values)),
-        f"median{suffix}": float(np.median(valid_values)),
+        f"mean{suffix}": float(np.nanmean(values)),
+        f"std{suffix}": float(np.nanstd(values)),
+        f"min{suffix}": float(np.nanmin(values)),
+        f"max{suffix}": float(np.nanmax(values)),
+        f"median{suffix}": float(np.nanmedian(values)),
     }

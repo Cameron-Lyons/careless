@@ -1,10 +1,14 @@
 """Shared input validation utilities for careless detection functions."""
 
+from typing import Any
+
 import numpy as np
+
+MatrixLike = list[list[float]] | np.ndarray | Any
 
 
 def validate_matrix_input(
-    x: list[list[float]] | np.ndarray | None,
+    x: MatrixLike | None,
     allow_1d: bool = False,
     min_columns: int = 1,
     dtype: type | None = None,
@@ -30,8 +34,8 @@ def validate_matrix_input(
     if x is None:
         raise ValueError("input data cannot be None")
 
-    if check_type and not isinstance(x, (list, np.ndarray)):
-        raise TypeError("input data must be a list or numpy array")
+    if check_type and not isinstance(x, (list, np.ndarray)) and not hasattr(x, "__array__"):
+        raise TypeError("input data must be a list, numpy array, or DataFrame")
 
     if isinstance(x, np.ndarray) and x.size == 0:
         raise ValueError("input data cannot be empty")

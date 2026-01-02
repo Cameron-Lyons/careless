@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 
 from careless._summary import calculate_summary_stats
-from careless._validation import validate_matrix_input
+from careless._validation import MatrixLike, validate_matrix_input
 
 
 def get_highly_correlated_pairs(
@@ -68,7 +68,7 @@ def compute_person_correlations(response_i: np.ndarray, response_j: np.ndarray) 
 
 
 def psychsyn(
-    x: list[list[float]] | np.ndarray,
+    x: MatrixLike,
     critval: float = 0.60,
     anto: bool = False,
     diag: bool = False,
@@ -221,7 +221,7 @@ def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
 
 
 def psychsyn_critval(
-    x: list[list[float]] | np.ndarray, anto: bool = False, min_correlation: float = 0.0
+    x: MatrixLike, anto: bool = False, min_correlation: float = 0.0
 ) -> list[tuple[int, int, float]]:
     """
     Calculate and order pairwise correlations for all items in the provided item response matrix.
@@ -268,7 +268,7 @@ def psychsyn_critval(
 
 
 def psychant(
-    x: list[list[float]] | np.ndarray,
+    x: MatrixLike,
     critval: float = -0.60,
     diag: bool = False,
     resample_na: bool = False,
@@ -303,9 +303,7 @@ def psychant(
     )  # type: ignore[return-value]
 
 
-def psychsyn_summary(
-    x: list[list[float]] | np.ndarray, critval: float = 0.60, anto: bool = False
-) -> dict[str, Any]:
+def psychsyn_summary(x: MatrixLike, critval: float = 0.60, anto: bool = False) -> dict[str, Any]:
     """
     Calculate summary statistics for psychometric synonym/antonym analysis.
 

@@ -7,6 +7,7 @@ detecting careless responding patterns such as straightlining (repeating the sam
 """
 
 from itertools import groupby
+from typing import Literal, overload
 
 import numpy as np
 
@@ -111,6 +112,24 @@ def avgstr_message(message: str) -> float:
 
     total_len = sum(count for _, count in rle_list)
     return total_len / len(rle_list)
+
+
+@overload
+def longstring(messages: str, avg: Literal[False] = False) -> tuple[str, int] | None: ...
+@overload
+def longstring(messages: str, avg: Literal[True]) -> float: ...
+@overload
+def longstring(
+    messages: list[str], avg: Literal[False] = False
+) -> list[tuple[str, int] | None]: ...
+@overload
+def longstring(messages: list[str], avg: Literal[True]) -> list[float]: ...
+@overload
+def longstring(
+    messages: np.ndarray, avg: Literal[False] = False
+) -> list[tuple[str, int] | None]: ...
+@overload
+def longstring(messages: np.ndarray, avg: Literal[True]) -> list[float]: ...
 
 
 def longstring(
