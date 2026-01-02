@@ -162,11 +162,11 @@ def psychsyn(
     diag_values: np.ndarray = np.sum(~np.isnan(person_corrs), axis=1)
 
     if _return_item_info:
-        return scores, diag_values, item_pairs
-    elif diag:
-        return scores, diag_values
-    else:
-        return scores
+        return (scores, diag_values, item_pairs)
+    if diag:
+        return (scores, diag_values)
+    result: np.ndarray = scores
+    return result
 
 
 def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
@@ -201,8 +201,7 @@ def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
     if all_nan_rows.any():
         all_nan_count = all_nan_rows.sum() * n_pairs
         result[all_nan_rows] = (
-            random_signs[:all_nan_count].reshape(-1, n_pairs)
-            * row_means[all_nan_rows, np.newaxis]
+            random_signs[:all_nan_count].reshape(-1, n_pairs) * row_means[all_nan_rows, np.newaxis]
         )
         remaining_signs = random_signs[all_nan_count:]
     else:
@@ -211,12 +210,12 @@ def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
     has_some_valid = ~all_nan_rows & missing_mask.any(axis=1)
     if has_some_valid.any():
         partial_missing_mask = missing_mask & has_some_valid[:, np.newaxis]
-        row_indices = np.broadcast_to(
-            np.arange(result.shape[0])[:, np.newaxis], result.shape
-        )[partial_missing_mask]
-        result[partial_missing_mask] = remaining_signs[: partial_missing_mask.sum()] * row_means[
-            row_indices
+        row_indices = np.broadcast_to(np.arange(result.shape[0])[:, np.newaxis], result.shape)[
+            partial_missing_mask
         ]
+        result[partial_missing_mask] = (
+            remaining_signs[: partial_missing_mask.sum()] * row_means[row_indices]
+        )
 
     return result
 
@@ -301,7 +300,7 @@ def psychant(
     """
     return psychsyn(
         x, critval=critval, anto=True, diag=diag, resample_na=resample_na, random_seed=random_seed
-    )
+    )  # type: ignore[return-value]
 
 
 def psychsyn_summary(
