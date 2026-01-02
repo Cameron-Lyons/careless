@@ -134,11 +134,19 @@ def _compute_mahalanobis_distance(x: np.ndarray) -> np.ndarray:
     mean_vector = np.mean(x, axis=0)
     cov_matrix = np.cov(x, rowvar=False)
 
-    cond_number = np.linalg.cond(cov_matrix)
-    if cond_number < 1 / np.finfo(cov_matrix.dtype).eps:
-        inv_cov_matrix = np.linalg.inv(cov_matrix)
+    u, s, vh = np.linalg.svd(cov_matrix, full_matrices=False)
+
+    eps = np.finfo(cov_matrix.dtype).eps
+    s_min = s[-1] if s[-1] > 0 else eps
+    cond_number = s[0] / s_min
+
+    if cond_number < 1 / eps:
+        inv_s = 1.0 / s
     else:
-        inv_cov_matrix = np.linalg.pinv(cov_matrix)
+        threshold = eps * max(cov_matrix.shape) * s[0]
+        inv_s = np.where(s > threshold, 1.0 / s, 0.0)
+
+    inv_cov_matrix = (vh.T * inv_s) @ u.T
 
     centered_data = x - mean_vector
     mahalanobis_squared = np.einsum("ij,jk,ik->i", centered_data, inv_cov_matrix, centered_data)

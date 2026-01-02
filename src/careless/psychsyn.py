@@ -74,7 +74,8 @@ def psychsyn(
     diag: bool = False,
     resample_na: bool = False,
     random_seed: int | None = None,
-) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+    _return_item_info: bool = False,
+) -> np.ndarray | tuple[np.ndarray, np.ndarray] | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Calculate psychometric synonym (or antonym) scores based on the provided item response matrix.
 
@@ -133,10 +134,14 @@ def psychsyn(
     item_pairs = get_highly_correlated_pairs(item_correlations, critval, anto)
 
     if len(item_pairs) == 0:
-        if diag:
-            return np.full(x_array.shape[0], np.nan), np.zeros(x_array.shape[0], dtype=int)
+        empty_scores = np.full(x_array.shape[0], np.nan)
+        empty_diag = np.zeros(x_array.shape[0], dtype=int)
+        if _return_item_info:
+            return empty_scores, empty_diag, item_pairs
+        elif diag:
+            return empty_scores, empty_diag
         else:
-            return np.full(x_array.shape[0], np.nan)
+            return empty_scores
 
     response_i = x_array[:, item_pairs[:, 0]]
     response_j = x_array[:, item_pairs[:, 1]]
@@ -154,12 +159,14 @@ def psychsyn(
     if np.any(np.isnan(scores)) and len(item_pairs) > 0:
         scores = np.nan_to_num(scores, nan=0.0)
 
+    diag_values: np.ndarray = np.sum(~np.isnan(person_corrs), axis=1)
+
+    if _return_item_info:
+        return (scores, diag_values, item_pairs)
     if diag:
-        diag_values: np.ndarray = np.sum(~np.isnan(person_corrs), axis=1)
-        return scores, diag_values
-    else:
-        result: np.ndarray = scores
-        return result
+        return (scores, diag_values)
+    result: np.ndarray = scores
+    return result
 
 
 def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
@@ -172,12 +179,16 @@ def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
     Returns:
     - Array with resampled values replacing NaN
     """
-    result = person_corrs.copy()
-    n_persons, n_pairs = result.shape
+    missing_mask = np.isnan(person_corrs)
+    total_missing = missing_mask.sum()
 
-    missing_mask = np.isnan(result)
+    if total_missing == 0:
+        return person_corrs
+
+    result = person_corrs.copy()
+    n_pairs = result.shape[1]
+
     all_nan_rows = missing_mask.all(axis=1)
-    has_some_valid = ~all_nan_rows & missing_mask.any(axis=1)
 
     with np.errstate(invalid="ignore"):
         row_means = np.abs(np.nanmean(result, axis=1))
@@ -185,30 +196,26 @@ def _resample_missing_correlations(person_corrs: np.ndarray) -> np.ndarray:
     overall_mean = np.abs(np.nanmean(result))
     row_means[all_nan_rows] = overall_mean if not np.isnan(overall_mean) else 0.0
 
-    total_missing = missing_mask.sum()
-    if total_missing > 0:
-        random_signs = np.random.choice([-1, 1], size=total_missing)
+    random_signs = np.random.choice([-1, 1], size=total_missing)
 
-        if all_nan_rows.any():
-            all_nan_count = all_nan_rows.sum() * n_pairs
-            result[all_nan_rows] = (
-                random_signs[:all_nan_count].reshape(-1, n_pairs)
-                * row_means[all_nan_rows, np.newaxis]
-            )
-            random_signs = random_signs[all_nan_count:]
+    if all_nan_rows.any():
+        all_nan_count = all_nan_rows.sum() * n_pairs
+        result[all_nan_rows] = (
+            random_signs[:all_nan_count].reshape(-1, n_pairs) * row_means[all_nan_rows, np.newaxis]
+        )
+        remaining_signs = random_signs[all_nan_count:]
+    else:
+        remaining_signs = random_signs
 
-        if has_some_valid.any():
-            partial_missing_mask = missing_mask & has_some_valid[:, np.newaxis]
-            partial_missing_counts = partial_missing_mask.sum(axis=1)
-
-            idx = 0
-            for person_idx in np.where(has_some_valid)[0]:
-                count = partial_missing_counts[person_idx]
-                if count > 0:
-                    result[person_idx, missing_mask[person_idx]] = (
-                        random_signs[idx : idx + count] * row_means[person_idx]
-                    )
-                    idx += count
+    has_some_valid = ~all_nan_rows & missing_mask.any(axis=1)
+    if has_some_valid.any():
+        partial_missing_mask = missing_mask & has_some_valid[:, np.newaxis]
+        row_indices = np.broadcast_to(np.arange(result.shape[0])[:, np.newaxis], result.shape)[
+            partial_missing_mask
+        ]
+        result[partial_missing_mask] = (
+            remaining_signs[: partial_missing_mask.sum()] * row_means[row_indices]
+        )
 
     return result
 
@@ -293,7 +300,7 @@ def psychant(
     """
     return psychsyn(
         x, critval=critval, anto=True, diag=diag, resample_na=resample_na, random_seed=random_seed
-    )
+    )  # type: ignore[return-value]
 
 
 def psychsyn_summary(
@@ -317,12 +324,8 @@ def psychsyn_summary(
         {'mean_score': 0.75, 'std_score': 0.24, 'item_pairs': 3, ...}
     """
 
-    scores, _ = psychsyn(x, critval=critval, anto=anto, diag=True)
-
-    x_array = np.asarray(x)
-    item_correlations = np.corrcoef(x_array, rowvar=False)
-    item_correlations[np.isnan(item_correlations)] = 0
-    item_pairs = get_highly_correlated_pairs(item_correlations, critval, anto)
+    result = psychsyn(x, critval=critval, anto=anto, diag=True, _return_item_info=True)
+    scores, _, item_pairs = result  # type: ignore[misc]
 
     valid_count = int(np.sum(~np.isnan(scores)))
     summary = calculate_summary_stats(scores, suffix="_score")

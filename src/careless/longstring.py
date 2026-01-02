@@ -164,7 +164,7 @@ def longstring(
         else:
             return longstr_message(messages)
 
-    elif isinstance(messages, list):
+    if isinstance(messages, list):
         if not messages:
             raise ValueError("messages list cannot be empty")
 
@@ -172,19 +172,25 @@ def longstring(
             raise TypeError("all elements in messages list must be strings")
 
         if avg:
-            return [avgstr_message(message) for message in messages]
+            return [avgstr_message(msg) for msg in messages]
         else:
-            return [longstr_message(message) for message in messages]
+            return [longstr_message(msg) for msg in messages]
 
     elif isinstance(messages, np.ndarray):
         if messages.size == 0:
             raise ValueError("messages array cannot be empty")
 
-        messages_list = messages.tolist()
+        is_str = np.issubdtype(messages.dtype, np.str_)
+        is_string_dtype = is_str or messages.dtype.kind in ("U", "S")
+        messages_list: list[str] = messages.tolist()
+
+        if not is_string_dtype:
+            messages_list = [str(msg) for msg in messages_list]
+
         if avg:
-            return [avgstr_message(str(message)) for message in messages_list]
+            return [avgstr_message(msg) for msg in messages_list]
         else:
-            return [longstr_message(str(message)) for message in messages_list]
+            return [longstr_message(msg) for msg in messages_list]
 
     else:
         raise TypeError("messages must be a string, list of strings, or numpy array")
