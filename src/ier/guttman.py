@@ -50,23 +50,19 @@ def guttman(
     difficulty_order = np.argsort(item_difficulty)
     x_sorted = x_array[:, difficulty_order]
 
-    errors = np.zeros(n_persons)
-    comparisons = np.zeros(n_persons)
+    i_indices, j_indices = np.triu_indices(n_items, k=1)
+    item_easy = x_sorted[:, i_indices]
+    item_hard = x_sorted[:, j_indices]
 
-    for i in range(n_items - 1):
-        for j in range(i + 1, n_items):
-            item_easy = x_sorted[:, i]
-            item_hard = x_sorted[:, j]
+    if na_rm:
+        valid = ~np.isnan(item_easy) & ~np.isnan(item_hard)
+        comparisons = np.sum(valid, axis=1).astype(float)
+        error_mask = valid & (item_easy < item_hard)
+    else:
+        comparisons = np.full(n_persons, len(i_indices), dtype=float)
+        error_mask = item_easy < item_hard
 
-            if na_rm:
-                valid = ~np.isnan(item_easy) & ~np.isnan(item_hard)
-                comparisons += valid.astype(float)
-                error_mask = valid & (item_easy < item_hard)
-            else:
-                comparisons += 1
-                error_mask = item_easy < item_hard
-
-            errors += error_mask.astype(float)
+    errors = np.sum(error_mask, axis=1).astype(float)
 
     if normalize:
         with np.errstate(invalid="ignore", divide="ignore"):

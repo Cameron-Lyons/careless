@@ -137,9 +137,30 @@ def response_pattern(
     """
     x_array = validate_matrix_input(x, min_columns=1)
 
+    if scale_min is None:
+        scale_min = np.nanmin(x_array)
+    if scale_max is None:
+        scale_max = np.nanmax(x_array)
+
+    extreme_low = x_array == scale_min
+    extreme_high = x_array == scale_max
+    extreme = extreme_low | extreme_high
+    midpoint = (scale_min + scale_max) / 2
+    is_midpoint = x_array == midpoint
+
+    valid = ~np.isnan(x_array)
+    valid_counts = np.sum(valid, axis=1)
+
+    with np.errstate(invalid="ignore", divide="ignore"):
+        extreme_scores = np.sum(extreme & valid, axis=1) / valid_counts
+        mid_scores = np.sum(is_midpoint & valid, axis=1) / valid_counts
+
+    extreme_scores = np.where(valid_counts == 0, np.nan, extreme_scores)
+    mid_scores = np.where(valid_counts == 0, np.nan, mid_scores)
+
     return {
-        "extreme": u3_poly(x_array, scale_min, scale_max),
-        "midpoint": midpoint_responding(x_array, scale_min, scale_max),
+        "extreme": extreme_scores,
+        "midpoint": mid_scores,
         "acquiescence": np.nanmean(x_array, axis=1),
         "variability": np.nanstd(x_array, axis=1),
     }
