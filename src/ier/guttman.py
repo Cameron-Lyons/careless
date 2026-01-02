@@ -64,6 +64,7 @@ def guttman(
 
     errors = np.sum(error_mask, axis=1).astype(float)
 
+    result: np.ndarray
     if normalize:
         with np.errstate(invalid="ignore", divide="ignore"):
             result = errors / comparisons
