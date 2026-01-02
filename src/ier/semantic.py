@@ -7,7 +7,7 @@ are predefined based on item content (e.g., "I am happy" vs "I am sad").
 
 import numpy as np
 
-from careless._validation import MatrixLike, validate_matrix_input
+from ier._validation import MatrixLike, validate_matrix_input
 
 
 def semantic_syn(

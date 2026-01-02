@@ -3,10 +3,10 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "careless-py"
+name = "ier"
 version = "1.1.0"
 authors = [{ name = "Cameron Lyons", email = "cameron.lyons2@gmail.com" }]
-description = "Python version of R careless package"
+description = "Python library for detecting Insufficient Effort Responding (IER) in survey data"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.17.0"]
@@ -37,8 +37,8 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [project.urls]
-"Homepage" = "https://github.com/Cameron-Lyons/careless-py"
-"Bug Tracker" = "https://github.com/Cameron-Lyons/careless-py/issues"
+"Homepage" = "https://github.com/Cameron-Lyons/ier"
+"Bug Tracker" = "https://github.com/Cameron-Lyons/ier/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -48,7 +48,7 @@ addopts = "-v --tb=short -Werror"
 filterwarnings = ["error"]
 
 [tool.coverage.run]
-source = ["src/careless"]
+source = ["src/ier"]
 branch = true
 omit = ["tests/*"]
 
@@ -70,7 +70,7 @@ src = ["src"]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["careless"]
+known-first-party = ["ier"]
 
 [tool.mypy]
 python_version = "3.14"

@@ -7,7 +7,7 @@ difficulty ordering. High error counts suggest inconsistent or careless respondi
 
 import numpy as np
 
-from careless._validation import MatrixLike, validate_matrix_input
+from ier._validation import MatrixLike, validate_matrix_input
 
 
 def guttman(

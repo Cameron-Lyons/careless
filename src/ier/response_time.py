@@ -7,7 +7,7 @@ careless or inattentive responding.
 
 import numpy as np
 
-from careless._validation import MatrixLike, validate_matrix_input
+from ier._validation import MatrixLike, validate_matrix_input
 
 
 def response_time(

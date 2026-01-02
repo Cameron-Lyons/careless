@@ -1,4 +1,4 @@
-"""Property-based tests for the careless library using Hypothesis.
+"""Property-based tests for the ier library using Hypothesis.
 
 These tests verify mathematical properties and invariants that should hold
 for any valid input, providing more comprehensive coverage than example-based tests.
@@ -9,17 +9,17 @@ from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
 
-from careless.evenodd import evenodd
-from careless.irv import irv
-from careless.longstring import (
+from ier.evenodd import evenodd
+from ier.irv import irv
+from ier.longstring import (
     avgstr_message,
     longstr_message,
     longstring,
     run_length_decode,
     run_length_encode,
 )
-from careless.mahad import mahad
-from careless.psychsyn import psychsyn
+from ier.mahad import mahad
+from ier.psychsyn import psychsyn
 
 
 def valid_survey_data(

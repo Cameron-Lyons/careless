@@ -71,7 +71,7 @@ jobs:
         run: |
           uv venv
           uv pip install dist/*.whl
-          uv run python -c "import careless; print('Import successful')"
+          uv run python -c "import ier; print('Import successful')"
 
   publish-testpypi:
     name: Publish to TestPyPI
@@ -80,7 +80,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'testpypi'
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/careless-py
+      url: https://test.pypi.org/p/ier
 
     steps:
       - name: Download build artifacts
@@ -101,7 +101,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi')
     environment:
       name: pypi
-      url: https://pypi.org/p/careless-py
+      url: https://pypi.org/p/ier
 
     steps:
       - name: Download build artifacts
