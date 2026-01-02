@@ -77,9 +77,6 @@ def longstr_message(message: str) -> tuple[str, int] | None:
         return None
 
     encoded = run_length_encode(message)
-    if not encoded:
-        return None
-
     longest_run = max(encoded, key=lambda x: x[1])
     return longest_run
 
@@ -199,8 +196,7 @@ def longstring(
         if messages.size == 0:
             raise ValueError("messages array cannot be empty")
 
-        is_str = np.issubdtype(messages.dtype, np.str_)
-        is_string_dtype = is_str or messages.dtype.kind in ("U", "S")
+        is_string_dtype = messages.dtype.kind in ("U", "S")
         messages_list: list[str] = messages.tolist()
 
         if not is_string_dtype:

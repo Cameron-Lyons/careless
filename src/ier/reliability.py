@@ -46,42 +46,42 @@ def individual_reliability(
     n_persons = x_array.shape[0]
     n_items = x_array.shape[1]
 
-    if n_items < 4:
-        raise ValueError("need at least 4 items for split-half reliability")
-
     if random_seed is not None:
         np.random.seed(random_seed)
 
     correlations = np.zeros((n_persons, n_splits))
+    half = n_items // 2
 
     for split_idx in range(n_splits):
         indices = np.random.permutation(n_items)
-        half = n_items // 2
         first_half = indices[:half]
         second_half = indices[half : 2 * half]
 
-        scores1 = np.nanmean(x_array[:, first_half], axis=1)
-        scores2 = np.nanmean(x_array[:, second_half], axis=1)
+        half1 = x_array[:, first_half]
+        half2 = x_array[:, second_half]
 
-        for i in range(n_persons):
-            s1, s2 = scores1[i], scores2[i]
-            if np.isnan(s1) or np.isnan(s2) or (np.std([s1]) == 0 and np.std([s2]) == 0):
-                correlations[i, split_idx] = np.nan
-            else:
-                all_scores1 = x_array[i, first_half]
-                all_scores2 = x_array[i, second_half]
-                valid = ~np.isnan(all_scores1) & ~np.isnan(all_scores2)
-                if valid.sum() < 2:
-                    correlations[i, split_idx] = np.nan
-                else:
-                    std1 = np.std(all_scores1[valid])
-                    std2 = np.std(all_scores2[valid])
-                    if std1 == 0 or std2 == 0:
-                        correlations[i, split_idx] = np.nan
-                    else:
-                        correlations[i, split_idx] = np.corrcoef(
-                            all_scores1[valid], all_scores2[valid]
-                        )[0, 1]
+        valid = ~np.isnan(half1) & ~np.isnan(half2)
+        valid_counts = valid.sum(axis=1)
+
+        half1_masked = np.where(valid, half1, np.nan)
+        half2_masked = np.where(valid, half2, np.nan)
+
+        with np.errstate(invalid="ignore"):
+            mean1 = np.nanmean(half1_masked, axis=1, keepdims=True)
+            mean2 = np.nanmean(half2_masked, axis=1, keepdims=True)
+
+            centered1 = np.where(valid, half1 - mean1, 0.0)
+            centered2 = np.where(valid, half2 - mean2, 0.0)
+
+            cov = (centered1 * centered2).sum(axis=1)
+            std1 = np.sqrt((centered1**2).sum(axis=1))
+            std2 = np.sqrt((centered2**2).sum(axis=1))
+
+            split_corr = cov / (std1 * std2)
+
+        split_corr = np.where(valid_counts < 2, np.nan, split_corr)
+        split_corr = np.where((std1 == 0) | (std2 == 0), np.nan, split_corr)
+        correlations[:, split_idx] = split_corr
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
