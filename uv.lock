@@ -63,7 +63,7 @@ filecache = [
 
 [[package]]
 name = "careless-py"
-version = "1.0.3"
+version = "1.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -88,6 +88,14 @@ full = [
     { name = "scipy", version = "1.16.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "hypothesis" },
+    { name = "pytest" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.16.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.6.0" },
@@ -103,6 +111,13 @@ requires-dist = [
     { name = "scipy", marker = "extra == 'full'", specifier = ">=1.0.0" },
 ]
 provides-extras = ["full", "dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "hypothesis", specifier = ">=6.148.8" },
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "scipy", specifier = ">=1.15.3" },
+]
 
 [[package]]
 name = "certifi"

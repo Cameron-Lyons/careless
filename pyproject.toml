@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "careless-py"
-version = "1.0.3"
+version = "1.0.4"
 authors = [{ name = "Cameron Lyons", email = "cameron.lyons2@gmail.com" }]
 description = "Python version of R careless package"
 readme = "README.md"
@@ -95,3 +95,10 @@ max-line-length = 100
 [tool.bandit]
 exclude_dirs = ["tests"]
 skips = ["B101"]
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.148.8",
+    "pytest>=9.0.2",
+    "scipy>=1.15.3",
+]

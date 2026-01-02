@@ -16,6 +16,9 @@ from typing import Any
 
 import numpy as np
 
+from careless._summary import calculate_summary_stats
+from careless._validation import validate_matrix_input
+
 SCIPY_AVAILABLE = False
 stats: Any = None
 try:
@@ -72,19 +75,7 @@ def mahad(
         [False, False, False, True]
     """
 
-    if x is None:
-        raise ValueError("input data cannot be None")
-
-    if not isinstance(x, (list, np.ndarray)):
-        raise TypeError("input data must be a list or numpy array")
-
-    x_array = np.asarray(x)
-
-    if x_array.ndim != 2:
-        raise ValueError("input data must be 2-dimensional")
-
-    if x_array.shape[0] == 0 or x_array.shape[1] == 0:
-        raise ValueError("input data cannot be empty")
+    x_array = validate_matrix_input(x)
 
     if confidence < 0 or confidence > 1:
         raise ValueError("confidence must be between 0 and 1")
@@ -143,11 +134,19 @@ def _compute_mahalanobis_distance(x: np.ndarray) -> np.ndarray:
     mean_vector = np.mean(x, axis=0)
     cov_matrix = np.cov(x, rowvar=False)
 
-    cond_number = np.linalg.cond(cov_matrix)
-    if cond_number < 1 / np.finfo(cov_matrix.dtype).eps:
-        inv_cov_matrix = np.linalg.inv(cov_matrix)
+    u, s, vh = np.linalg.svd(cov_matrix, full_matrices=False)
+
+    eps = np.finfo(cov_matrix.dtype).eps
+    s_min = s[-1] if s[-1] > 0 else eps
+    cond_number = s[0] / s_min
+
+    if cond_number < 1 / eps:
+        inv_s = 1.0 / s
     else:
-        inv_cov_matrix = np.linalg.pinv(cov_matrix)
+        threshold = eps * max(cov_matrix.shape) * s[0]
+        inv_s = np.where(s > threshold, 1.0 / s, 0.0)
+
+    inv_cov_matrix = (vh.T * inv_s) @ u.T
 
     centered_data = x - mean_vector
     mahalanobis_squared = np.einsum("ij,jk,ik->i", centered_data, inv_cov_matrix, centered_data)
@@ -171,8 +170,6 @@ def _flag_outliers(
     - Boolean array indicating outliers
     """
     if method == "chi2":
-        if not SCIPY_AVAILABLE:
-            raise RuntimeError("scipy is required for chi2 method. Install with: pip install scipy")
         threshold: float = stats.chi2.ppf(confidence, df=n_features)
         result: np.ndarray = distances > np.sqrt(threshold)
         return result
@@ -240,29 +237,14 @@ def mahad_summary(
 
     distances, flags = mahad(x, flag=True, confidence=confidence, na_rm=na_rm)
 
-    valid_distances = distances[~np.isnan(distances)]
-
-    if len(valid_distances) == 0:
-        return {
-            "mean": np.nan,
-            "std": np.nan,
-            "min": np.nan,
-            "max": np.nan,
-            "median": np.nan,
-            "outliers": 0,
+    valid_count = int(np.sum(~np.isnan(distances)))
+    stats = calculate_summary_stats(distances)
+    stats.update(
+        {
+            "outliers": int(np.sum(flags)) if valid_count > 0 else 0,
             "total": len(distances),
-            "valid_count": 0,
-            "missing_count": np.sum(np.isnan(distances)),
+            "valid_count": valid_count,
+            "missing_count": int(np.sum(np.isnan(distances))),
         }
-
-    return {
-        "mean": float(np.mean(valid_distances)),
-        "std": float(np.std(valid_distances)),
-        "min": float(np.min(valid_distances)),
-        "max": float(np.max(valid_distances)),
-        "median": float(np.median(valid_distances)),
-        "outliers": int(np.sum(flags)),
-        "total": len(distances),
-        "valid_count": len(valid_distances),
-        "missing_count": int(np.sum(np.isnan(distances))),
-    }
+    )
+    return stats

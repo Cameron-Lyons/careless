@@ -6,6 +6,7 @@ This module provides functions to analyze patterns in response data, particularl
 detecting careless responding patterns such as straightlining (repeating the same response).
 """
 
+from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
 
 import numpy as np
@@ -114,7 +115,7 @@ def avgstr_message(message: str) -> float:
 
 
 def longstring(
-    messages: str | list[str] | np.ndarray, avg: bool = False
+    messages: str | list[str] | np.ndarray, avg: bool = False, n_jobs: int = 1
 ) -> tuple[str, int] | None | list[tuple[str, int] | None] | float | list[float]:
     """
     Analyze strings for patterns of identical consecutive characters.
@@ -128,6 +129,9 @@ def longstring(
                or numpy array of strings.
     - avg: If True, return average length of consecutive identical characters.
            If False, return the longest sequence of identical characters.
+    - n_jobs: Number of parallel jobs for processing multiple messages.
+              Default is 1 (sequential). Use -1 to use all available cores.
+              Only affects lists and arrays with multiple messages.
 
     Returns:
     - If avg=False: Tuple (character, length) for longest run, or None if no runs found
@@ -164,27 +168,41 @@ def longstring(
         else:
             return longstr_message(messages)
 
-    elif isinstance(messages, list):
+    process_func = avgstr_message if avg else longstr_message
+
+    def _process_messages(
+        msg_list: list[str], func: type[avgstr_message] | type[longstr_message], jobs: int
+    ) -> list[float] | list[tuple[str, int] | None]:
+        import os
+
+        if jobs == -1:
+            jobs = os.cpu_count() or 1
+        if jobs > 1 and len(msg_list) > 1:
+            with ThreadPoolExecutor(max_workers=jobs) as executor:
+                return list(executor.map(func, msg_list))
+        return [func(msg) for msg in msg_list]
+
+    if isinstance(messages, list):
         if not messages:
             raise ValueError("messages list cannot be empty")
 
         if not all(isinstance(msg, str) for msg in messages):
             raise TypeError("all elements in messages list must be strings")
 
-        if avg:
-            return [avgstr_message(message) for message in messages]
-        else:
-            return [longstr_message(message) for message in messages]
+        return _process_messages(messages, process_func, n_jobs)  # type: ignore[arg-type]
 
     elif isinstance(messages, np.ndarray):
         if messages.size == 0:
             raise ValueError("messages array cannot be empty")
 
-        messages_list = messages.tolist()
-        if avg:
-            return [avgstr_message(str(message)) for message in messages_list]
-        else:
-            return [longstr_message(str(message)) for message in messages_list]
+        is_str = np.issubdtype(messages.dtype, np.str_)
+        is_string_dtype = is_str or messages.dtype.kind in ("U", "S")
+        messages_list: list[str] = messages.tolist()
+
+        if not is_string_dtype:
+            messages_list = [str(msg) for msg in messages_list]
+
+        return _process_messages(messages_list, process_func, n_jobs)  # type: ignore[arg-type]
 
     else:
         raise TypeError("messages must be a string, list of strings, or numpy array")

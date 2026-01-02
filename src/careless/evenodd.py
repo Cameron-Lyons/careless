@@ -4,6 +4,8 @@ import warnings
 
 import numpy as np
 
+from careless._validation import validate_matrix_input
+
 
 def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.ndarray:
     """
@@ -31,26 +33,26 @@ def calculate_correlations(even_cols: np.ndarray, odd_cols: np.ndarray) -> np.nd
     valid_mask = ~(np.isnan(even_vals) | np.isnan(odd_vals))
     valid_counts = valid_mask.sum(axis=1)
 
-    even_masked = np.where(valid_mask, even_vals, 0.0)
-    odd_masked = np.where(valid_mask, odd_vals, 0.0)
+    even_vals_masked = np.where(valid_mask, even_vals, np.nan)
+    odd_vals_masked = np.where(valid_mask, odd_vals, np.nan)
 
     with np.errstate(invalid="ignore", divide="ignore"):
-        even_mean = even_masked.sum(axis=1) / valid_counts
-        odd_mean = odd_masked.sum(axis=1) / valid_counts
+        even_mean = np.nansum(even_vals_masked, axis=1) / valid_counts
+        odd_mean = np.nansum(odd_vals_masked, axis=1) / valid_counts
 
-    even_centered = np.where(valid_mask, even_vals - even_mean[:, np.newaxis], 0.0)
-    odd_centered = np.where(valid_mask, odd_vals - odd_mean[:, np.newaxis], 0.0)
+        even_centered = np.where(valid_mask, even_vals - even_mean[:, np.newaxis], 0.0)
+        odd_centered = np.where(valid_mask, odd_vals - odd_mean[:, np.newaxis], 0.0)
 
-    cov = (even_centered * odd_centered).sum(axis=1)
-    even_std = np.sqrt((even_centered**2).sum(axis=1))
-    odd_std = np.sqrt((odd_centered**2).sum(axis=1))
+        cov = (even_centered * odd_centered).sum(axis=1)
+        even_std = np.sqrt((even_centered**2).sum(axis=1))
+        odd_std = np.sqrt((odd_centered**2).sum(axis=1))
 
-    with np.errstate(invalid="ignore", divide="ignore"):
         correlations = cov / (even_std * odd_std)
 
     correlations = np.clip(correlations, -1.0, 1.0)
-    correlations = np.where(valid_counts < 2, np.nan, correlations)
-    correlations = np.where(np.isnan(correlations) & (valid_counts >= 2), 0.0, correlations)
+    correlations = np.where(
+        valid_counts < 2, np.nan, np.where(np.isnan(correlations), 0.0, correlations)
+    )
 
     return correlations
 
@@ -90,20 +92,7 @@ def evenodd(
     if not factors:
         raise ValueError("factors list cannot be empty")
 
-    if x is None:
-        raise ValueError("input data cannot be None")
-
-    if isinstance(x, np.ndarray) and x.size == 0:
-        raise ValueError("input data cannot be empty")
-
-    if isinstance(x, list) and len(x) == 0:
-        raise ValueError("input data cannot be empty")
-
-    x_array = np.array(x, dtype=float)
-    if x_array.ndim == 1:
-        x_array = x_array.reshape(1, -1)
-    if x_array.ndim != 2:
-        raise ValueError("input data must be 2-dimensional")
+    x_array = validate_matrix_input(x, allow_1d=True, dtype=float, check_type=False)
     num_individuals = x_array.shape[0]
 
     expected_cols = sum(factors)
