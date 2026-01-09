@@ -97,4 +97,5 @@ dev = [
     "bandit>=1.9.0",
     "pip-audit>=2.9.0",
     "hypothesis>=6.150.0",
+    "pre-commit>=4.0.0",
 ]
