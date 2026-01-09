@@ -8,8 +8,8 @@ version = "1.1.4"
 authors = [{ name = "Cameron Lyons", email = "cameron.lyons2@gmail.com" }]
 description = "Python library for detecting Insufficient Effort Responding (IER) in survey data"
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = ["numpy>=1.17.0"]
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26.0"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
@@ -17,18 +17,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-full = ["scipy>=1.0.0"]
-dev = [
-  "scipy>=1.0.0",
-  "pytest>=6.0.0",
-  "pytest-cov>=2.0.0",
-  "mypy>=0.900",
-  "ruff>=0.1.0",
-  "pylint>=2.0.0",
-  "bandit>=1.6.0",
-  "pip-audit>=1.0.0",
-  "hypothesis>=6.0.0",
-]
+full = ["scipy>=1.11.0"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -98,7 +87,14 @@ skips = ["B101"]
 
 [dependency-groups]
 dev = [
-    "hypothesis>=6.148.8",
+    "scipy>=1.16.3",
+    "scipy-stubs>=1.16.3",
     "pytest>=9.0.2",
-    "scipy>=1.15.3",
+    "pytest-cov>=7.0.0",
+    "mypy>=1.19.0",
+    "ruff>=0.14.0",
+    "pylint>=4.0.0",
+    "bandit>=1.9.0",
+    "pip-audit>=2.9.0",
+    "hypothesis>=6.150.0",
 ]
