@@ -349,11 +349,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-full = [
-    { name = "scipy" },
-]
-
-[package.dev-dependencies]
 dev = [
     { name = "bandit" },
     { name = "hypothesis" },
@@ -367,28 +362,27 @@ dev = [
     { name = "scipy" },
     { name = "scipy-stubs" },
 ]
+full = [
+    { name = "scipy" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.9.0" },
+    { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.150.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.19.0" },
     { name = "numpy", specifier = ">=1.26.0" },
+    { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.9.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+    { name = "pylint", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.2" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.0" },
+    { name = "scipy", marker = "extra == 'dev'", specifier = ">=1.16.3" },
     { name = "scipy", marker = "extra == 'full'", specifier = ">=1.11.0" },
+    { name = "scipy-stubs", marker = "extra == 'dev'", specifier = ">=1.16.3" },
 ]
-provides-extras = ["full"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "bandit", specifier = ">=1.9.0" },
-    { name = "hypothesis", specifier = ">=6.150.0" },
-    { name = "mypy", specifier = ">=1.19.0" },
-    { name = "pip-audit", specifier = ">=2.9.0" },
-    { name = "pre-commit", specifier = ">=4.0.0" },
-    { name = "pylint", specifier = ">=4.0.0" },
-    { name = "pytest", specifier = ">=9.0.2" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "ruff", specifier = ">=0.14.0" },
-    { name = "scipy", specifier = ">=1.16.3" },
-    { name = "scipy-stubs", specifier = ">=1.16.3" },
-]
+provides-extras = ["full", "dev"]
 
 [[package]]
 name = "isort"
