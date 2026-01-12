@@ -10,7 +10,7 @@ The `ier` package provides solutions designed to detect such insufficient effort
 
 ## Features
 
-- **Multiple Detection Methods**: Supports 15+ indices for detecting careless responding
+- **Multiple Detection Methods**: Supports 20+ indices for detecting careless responding
 - **Flexible Input**: Works with lists, numpy arrays, pandas DataFrames, and polars DataFrames
 - **Robust Implementation**: Handles missing data and edge cases
 - **Type Hints**: Full type annotations for IDE support
@@ -127,6 +127,21 @@ errors = guttman(data)
 flags = guttman_flag(data, threshold=0.5)
 ```
 
+#### `mad(x, positive_items, negative_items, scale_max=None)`
+Mean Absolute Difference between positively and negatively worded items. High MAD indicates careless responding (not attending to item direction).
+
+```python
+from ier import mad, mad_flag
+
+# Columns 0,2 are positively worded; columns 1,3 are negatively worded
+data = [
+    [5, 1, 5, 1],  # Attentive: high on pos, low on neg
+    [5, 5, 5, 5],  # Careless: ignores item direction
+]
+scores = mad(data, positive_items=[0, 2], negative_items=[1, 3], scale_max=5)
+scores, flags = mad_flag(data, positive_items=[0, 2], negative_items=[1, 3])
+```
+
 ### Response Pattern Indices
 
 #### `longstring(x, avg=False)`
@@ -203,6 +218,27 @@ distances, flags = mahad(data, flag=True, confidence=0.95)
 distances, flags = mahad(data, flag=True, method='iqr')
 ```
 
+#### `lz(x, difficulty=None, discrimination=None, theta=None, model='2pl')`
+Standardized log-likelihood (lz) person-fit statistic based on Item Response Theory. Negative values indicate aberrant response patterns.
+
+```python
+from ier import lz, lz_flag
+
+# Binary response data (0/1)
+data = [
+    [1, 1, 1, 0, 0, 0],  # Normal pattern
+    [0, 0, 0, 1, 1, 1],  # Aberrant pattern (fails easy, passes hard)
+]
+scores = lz(data)  # Negative = suspicious
+scores, flags = lz_flag(data, threshold=-1.96)
+
+# Use 1PL (Rasch) model
+scores = lz(data, model='1pl')
+
+# Provide custom item parameters
+scores = lz(data, difficulty=[-1, -0.5, 0, 0.5, 1, 1.5])
+```
+
 ### Response Time Indices
 
 #### `response_time(times, metric='median')`
@@ -222,6 +258,39 @@ flags = response_time_flag(times, threshold=1.0)
 
 # Coefficient of variation (low = suspiciously uniform)
 cv = response_time_consistency(times)
+```
+
+### Composite Index
+
+#### `composite(x, indices=None, method='mean', standardize=True)`
+Combines multiple IER indices into a single composite score. Higher scores indicate greater likelihood of careless responding.
+
+```python
+from ier import composite, composite_flag, composite_summary
+
+data = [
+    [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],  # Normal
+    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # Straightliner
+]
+
+# Default: combines IRV, longstring, Mahalanobis, psychsyn, person-total
+scores = composite(data)
+
+# Select specific indices
+scores = composite(data, indices=['irv', 'longstring', 'mahad'])
+
+# Different combination methods
+scores = composite(data, method='sum')   # Sum of z-scores
+scores = composite(data, method='max')   # Maximum z-score
+
+# Flag careless responders
+scores, flags = composite_flag(data, threshold=1.5)
+scores, flags = composite_flag(data, percentile=95.0)
+
+# Detailed summary with individual index scores
+summary = composite_summary(data)
+print(summary['indices_used'])  # ['irv', 'longstring', 'mahad', ...]
+print(summary['indices'])       # Dict of individual index scores
 ```
 
 ## Working with DataFrames
@@ -271,10 +340,10 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## Citation
 
 ```bibtex
-@software{ier2024,
+@software{ier2026,
   title={IER: Python package for detecting Insufficient Effort Responding},
   author={Lyons, Cameron},
-  year={2024},
+  year={2026},
   url={https://github.com/Cameron-Lyons/ier}
 }
 ```
