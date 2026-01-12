@@ -1,11 +1,18 @@
 """IER: Python library for detecting Insufficient Effort Responding in survey data."""
 
 from ._validation import MatrixLike as MatrixLike
+from .composite import composite as composite
+from .composite import composite_flag as composite_flag
+from .composite import composite_summary as composite_summary
 from .evenodd import evenodd as evenodd
 from .guttman import guttman as guttman
 from .guttman import guttman_flag as guttman_flag
 from .irv import irv as irv
 from .longstring import longstring as longstring
+from .lz import lz as lz
+from .lz import lz_flag as lz_flag
+from .mad import mad as mad
+from .mad import mad_flag as mad_flag
 from .mahad import mahad as mahad
 from .person_total import person_total as person_total
 from .psychsyn import psychant as psychant
@@ -23,6 +30,9 @@ from .u3_poly import u3_poly as u3_poly
 
 __all__ = [
     "MatrixLike",
+    "composite",
+    "composite_flag",
+    "composite_summary",
     "evenodd",
     "guttman",
     "guttman_flag",
@@ -30,6 +40,10 @@ __all__ = [
     "individual_reliability_flag",
     "irv",
     "longstring",
+    "lz",
+    "lz_flag",
+    "mad",
+    "mad_flag",
     "mahad",
     "midpoint_responding",
     "person_total",
