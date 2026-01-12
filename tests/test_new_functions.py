@@ -98,7 +98,10 @@ class TestGuttman(unittest.TestCase):
         data = [[1, 2, 3, 4, 5], [5, 4, 3, 2, 1]]
         flags = guttman_flag(data, threshold=0.3)
         self.assertEqual(len(flags), 2)
-        self.assertTrue(flags.dtype == bool)
+        self.assertTrue(
+            np.issubdtype(flags.dtype, np.bool_),
+            msg=f"Expected boolean dtype, got {flags.dtype}",
+        )
 
 
 class TestResponseTime(unittest.TestCase):
@@ -151,7 +154,10 @@ class TestIndividualReliability(unittest.TestCase):
         data = [[1, 2, 1, 2, 1, 2], [1, 5, 2, 4, 3, 3]]
         flags = individual_reliability_flag(data, n_splits=10, random_seed=42)
         self.assertEqual(len(flags), 2)
-        self.assertTrue(flags.dtype == bool)
+        self.assertTrue(
+            np.issubdtype(flags.dtype, np.bool_),
+            msg=f"Expected boolean dtype, got {flags.dtype}",
+        )
 
 
 class TestU3Poly(unittest.TestCase):
@@ -243,7 +249,10 @@ class TestComposite(unittest.TestCase):
         ]
         scores, flags = composite_flag(data, threshold=1.0)
         self.assertEqual(len(flags), 3)
-        self.assertTrue(flags.dtype == bool)
+        self.assertTrue(
+            np.issubdtype(flags.dtype, np.bool_),
+            msg=f"Expected boolean dtype, got {flags.dtype}",
+        )
         self.assertTrue(flags[1])
 
     def test_flag_with_percentile(self) -> None:
@@ -334,7 +343,10 @@ class TestMAD(unittest.TestCase):
             data, positive_items=[0, 2], negative_items=[1, 3], scale_max=5, threshold=3.0
         )
         self.assertEqual(len(flags), 3)
-        self.assertTrue(flags.dtype == bool)
+        self.assertTrue(
+            np.issubdtype(flags.dtype, np.bool_),
+            msg=f"Expected boolean dtype, got {flags.dtype}",
+        )
         self.assertTrue(flags[1])
         self.assertFalse(flags[0])
 
