@@ -440,7 +440,10 @@ class TestLz(unittest.TestCase):
         ]
         scores, flags = lz_flag(data, threshold=-1.5)
         self.assertEqual(len(flags), 2)
-        self.assertTrue(flags.dtype == bool)
+        self.assertTrue(
+            np.issubdtype(flags.dtype, np.bool_),
+            msg=f"Expected boolean dtype, got {flags.dtype}",
+        )
 
     def test_flag_with_custom_threshold(self) -> None:
         """Test lz flagging with custom threshold."""
