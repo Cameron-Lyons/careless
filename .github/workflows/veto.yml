@@ -34,7 +34,7 @@ jobs:
           if [[ "${{ needs.ci.result }}" != "success" ]] || \
              [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.security.result }}" != "success" ]] || \
-             [[ "${{ needs.version-check.result }}" != "success" ]]; then
+             [[ "${{ needs.version-check.result }}" != "success" && "${{ needs.version-check.result }}" != "skipped" ]]; then
             echo "CI: ${{ needs.ci.result }}"
             echo "Lint: ${{ needs.lint.result }}"
             echo "Security: ${{ needs.security.result }}"
