@@ -9,6 +9,7 @@ jobs:
   version-check:
     name: Check version updated
     runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout repository
