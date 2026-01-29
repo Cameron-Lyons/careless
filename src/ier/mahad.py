@@ -214,6 +214,77 @@ def _flag_outliers(
         raise ValueError(f"unknown method: {method}")
 
 
+def mahad_qqplot(
+    x: MatrixLike,
+    na_rm: bool = False,
+    plot: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute theoretical and observed quantiles for a Mahalanobis distance Q-Q plot.
+
+    Under the assumption of multivariate normality, squared Mahalanobis distances
+    follow a chi-squared distribution with degrees of freedom equal to the number
+    of variables. This function returns the quantiles needed to construct a Q-Q plot
+    for assessing that assumption and identifying outliers.
+
+    Parameters:
+    - x: A matrix of data where rows are observations and columns are variables.
+    - na_rm: If True, removes rows with missing data before computing distances.
+    - plot: If True, renders a Q-Q plot using matplotlib (requires matplotlib).
+
+    Returns:
+    - Tuple of (theoretical_quantiles, observed_squared_distances), both sorted
+      in ascending order. Theoretical quantiles are from the chi-squared distribution
+      with p degrees of freedom.
+
+    Raises:
+    - RuntimeError: If scipy is not available.
+    - RuntimeError: If plot=True and matplotlib is not available.
+    - ValueError: If inputs are invalid.
+
+    Example:
+        >>> data = [[1, 2], [3, 4], [5, 6], [7, 8]]
+        >>> theoretical, observed = mahad_qqplot(data)
+    """
+    if not SCIPY_AVAILABLE:
+        raise RuntimeError("scipy is required for mahad_qqplot. Install with: pip install scipy")
+
+    distances = mahad(x, flag=False, na_rm=na_rm)
+    assert isinstance(distances, np.ndarray)
+
+    valid_mask = ~np.isnan(distances)
+    valid_distances = distances[valid_mask]
+
+    observed_sq = np.sort(valid_distances**2)
+
+    n = len(observed_sq)
+    x_array = validate_matrix_input(x, check_type=False)
+    p = x_array.shape[1]
+
+    probabilities = (np.arange(1, n + 1) - 0.5) / n
+    theoretical: np.ndarray = stats.chi2.ppf(probabilities, df=p)
+
+    if plot:
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as exc:
+            raise RuntimeError(
+                "matplotlib is required for plotting. "
+                "Install with: pip install insufficient-effort[plot]"
+            ) from exc
+
+        _fig, ax = plt.subplots(1, 1)
+        ax.scatter(theoretical, observed_sq, edgecolors="black", facecolors="none")
+        max_val = max(float(np.max(theoretical)), float(np.max(observed_sq)))
+        ax.plot([0, max_val], [0, max_val], "r--", linewidth=1)
+        ax.set_xlabel("Theoretical Chi-Squared Quantiles")
+        ax.set_ylabel("Observed Squared Mahalanobis Distances")
+        ax.set_title("Mahalanobis Distance Q-Q Plot")
+        plt.show()
+
+    return theoretical, observed_sq
+
+
 def mahad_summary(x: MatrixLike, confidence: float = 0.95, na_rm: bool = False) -> dict[str, Any]:
     """
     Calculate summary statistics for Mahalanobis distances.
