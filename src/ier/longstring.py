@@ -11,6 +11,8 @@ from typing import Literal, overload
 
 import numpy as np
 
+from ier._validation import MatrixLike, validate_matrix_input
+
 
 def run_length_encode(message: str) -> list[tuple[str, int]]:
     """
@@ -209,3 +211,85 @@ def longstring(
 
     else:
         raise TypeError("messages must be a string, list of strings, or numpy array")
+
+
+def longstring_pattern(
+    x: MatrixLike,
+    max_pattern_length: int = 5,
+    na_rm: bool = True,
+) -> np.ndarray:
+    """
+    Detect repeating sub-patterns in numeric response sequences.
+
+    For each respondent, searches for repeating sub-patterns of length 2..k
+    in their response vector. Returns the longest consecutive repeating
+    pattern length found. Detects seesaw (1-2-1-2), cycling (1-2-3-1-2-3),
+    and similar patterned responding.
+
+    Parameters:
+    - x: A matrix of numeric data where rows are individuals and columns are
+         item responses.
+    - max_pattern_length: Maximum sub-pattern length to search for (default 5).
+    - na_rm: If True, removes NaN values before analysis. If False, raises
+             error if NaN values are present.
+
+    Returns:
+    - A numpy array with the longest repeating pattern length per respondent.
+      Returns 0 if no repeating pattern is found.
+
+    Raises:
+    - ValueError: If inputs are invalid.
+
+    Example:
+        >>> data = [[1, 2, 1, 2, 1, 2], [1, 2, 3, 4, 5, 6]]
+        >>> longstring_pattern(data)
+        array([6., 0.])
+    """
+    x_array = validate_matrix_input(x, min_columns=2, check_type=False)
+
+    if not na_rm and np.isnan(x_array).any():
+        raise ValueError("data contains missing values. Set na_rm=True to handle them")
+
+    n_rows = x_array.shape[0]
+    result = np.zeros(n_rows, dtype=float)
+
+    for i in range(n_rows):
+        row = x_array[i, :]
+        if na_rm:
+            row = row[~np.isnan(row)]
+
+        if len(row) < 4:
+            continue
+
+        result[i] = _longest_repeating_pattern(row, max_pattern_length)
+
+    return result
+
+
+def _longest_repeating_pattern(row: np.ndarray, max_k: int) -> float:
+    """Find the longest consecutive repeating sub-pattern in a numeric sequence.
+
+    Only counts patterns where the sub-pattern contains at least 2 distinct values
+    (i.e., excludes straight-line / constant sequences which are detected by longstring).
+    """
+    n = len(row)
+    best = 0
+
+    for k in range(2, min(max_k, n // 2) + 1):
+        start = 0
+        while start + k <= n:
+            pattern = row[start : start + k]
+            if len(np.unique(pattern)) < 2:
+                start += 1
+                continue
+            repeat_len = k
+            for j in range(start + k, n):
+                if row[j] == pattern[(j - start) % k]:
+                    repeat_len += 1
+                else:
+                    break
+            if repeat_len > k and repeat_len > best:
+                best = repeat_len
+            start += max(1, repeat_len - k + 1)
+
+    return float(best)

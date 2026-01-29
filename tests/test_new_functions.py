@@ -4,16 +4,22 @@ import unittest
 
 import numpy as np
 
-from ier.composite import composite, composite_flag, composite_summary
+from ier.composite import composite, composite_flag, composite_probability, composite_summary
 from ier.guttman import guttman, guttman_flag
+from ier.infrequency import infrequency, infrequency_flag
+from ier.longstring import longstring_pattern
 from ier.lz import lz, lz_flag
 from ier.mad import mad, mad_flag
+from ier.mahad import mahad_qqplot
+from ier.markov import markov, markov_flag, markov_summary
+from ier.onset import onset, onset_flag
 from ier.person_total import person_total
 from ier.reliability import individual_reliability, individual_reliability_flag
 from ier.response_time import (
     response_time,
     response_time_consistency,
     response_time_flag,
+    response_time_mixture,
 )
 from ier.semantic import semantic_ant, semantic_syn
 from ier.u3_poly import midpoint_responding, response_pattern, u3_poly
@@ -505,6 +511,481 @@ class TestLz(unittest.TestCase):
         data = [[1, 1, 0, 0], [0, 0, 1, 1]]
         with self.assertRaises(ValueError):
             lz(data, theta=[0.0])
+
+
+class TestInfrequency(unittest.TestCase):
+    """Tests for infrequency/bogus item scoring."""
+
+    def test_basic_functionality(self) -> None:
+        """Test basic infrequency counting."""
+        data = [[5, 3, 1], [5, 5, 5], [1, 3, 5]]
+        result = infrequency(data, item_indices=[0, 2], expected_responses=[5, 1])
+        self.assertEqual(len(result), 3)
+        self.assertAlmostEqual(result[0], 0.0)
+        self.assertAlmostEqual(result[1], 1.0)
+        self.assertAlmostEqual(result[2], 2.0)
+
+    def test_all_correct(self) -> None:
+        """Test that all-correct responses yield 0."""
+        data = [[5, 1], [5, 1]]
+        result = infrequency(data, item_indices=[0, 1], expected_responses=[5, 1])
+        np.testing.assert_array_equal(result, [0.0, 0.0])
+
+    def test_all_failed(self) -> None:
+        """Test that all-failed responses yield max count."""
+        data = [[1, 5], [2, 4]]
+        result = infrequency(data, item_indices=[0, 1], expected_responses=[5, 1])
+        np.testing.assert_array_equal(result, [2.0, 2.0])
+
+    def test_proportion(self) -> None:
+        """Test proportion mode."""
+        data = [[5, 5], [1, 1]]
+        result = infrequency(data, item_indices=[0, 1], expected_responses=[5, 1], proportion=True)
+        self.assertAlmostEqual(result[0], 0.5)
+
+    def test_flag_function(self) -> None:
+        """Test infrequency flagging."""
+        data = [[5, 3, 1], [1, 3, 5]]
+        scores, flags = infrequency_flag(data, [0, 2], [5, 1], threshold=2)
+        self.assertFalse(flags[0])
+        self.assertTrue(flags[1])
+
+    def test_flag_threshold(self) -> None:
+        """Test infrequency flag with different thresholds."""
+        data = [[5, 5], [1, 1]]
+        _, flags_t1 = infrequency_flag(data, [0, 1], [5, 1], threshold=1)
+        _, flags_t2 = infrequency_flag(data, [0, 1], [5, 1], threshold=2)
+        self.assertTrue(flags_t1[0])
+        self.assertFalse(flags_t2[0])
+
+    def test_empty_indices_raises(self) -> None:
+        """Test that empty item_indices raises ValueError."""
+        data = [[1, 2, 3]]
+        with self.assertRaises(ValueError):
+            infrequency(data, item_indices=[], expected_responses=[])
+
+    def test_mismatched_lengths_raises(self) -> None:
+        """Test that mismatched lengths raise ValueError."""
+        data = [[1, 2, 3]]
+        with self.assertRaises(ValueError):
+            infrequency(data, item_indices=[0, 1], expected_responses=[5])
+
+    def test_out_of_bounds_raises(self) -> None:
+        """Test that out-of-bounds index raises ValueError."""
+        data = [[1, 2, 3]]
+        with self.assertRaises(ValueError):
+            infrequency(data, item_indices=[10], expected_responses=[5])
+
+    def test_with_nan(self) -> None:
+        """Test NaN values are treated as non-matching but not counted as failures."""
+        data = [[np.nan, 1], [5, 1]]
+        result = infrequency(data, item_indices=[0, 1], expected_responses=[5, 1])
+        self.assertEqual(len(result), 2)
+
+
+class TestLongstringPattern(unittest.TestCase):
+    """Tests for longstring_pattern function."""
+
+    def test_basic_functionality(self) -> None:
+        """Test basic longstring pattern detection."""
+        data = [[1, 2, 1, 2, 1, 2], [1, 2, 3, 4, 5, 6]]
+        result = longstring_pattern(data)
+        self.assertEqual(len(result), 2)
+
+    def test_repeating_detected(self) -> None:
+        """Test that repeating pattern (seesaw) is detected."""
+        data = [[1, 2, 1, 2, 1, 2, 1, 2], [1, 3, 5, 2, 4, 1, 3, 5]]
+        result = longstring_pattern(data)
+        self.assertGreater(result[0], 0)
+
+    def test_no_pattern(self) -> None:
+        """Test that non-repeating data returns 0."""
+        data = [[1, 2, 3, 4, 5, 6, 7, 8]]
+        result = longstring_pattern(data)
+        self.assertAlmostEqual(result[0], 0.0)
+
+    def test_seesaw_pattern(self) -> None:
+        """Test seesaw (1-2-1-2) detection."""
+        data = [[1, 2, 1, 2, 1, 2, 1, 2, 1, 2]]
+        result = longstring_pattern(data)
+        self.assertGreater(result[0], 0)
+
+    def test_straight_line_excluded(self) -> None:
+        """Test that straight-line (all same) yields 0 since it's not a repeating pattern."""
+        data = [[3, 3, 3, 3, 3, 3, 3, 3]]
+        result = longstring_pattern(data)
+        self.assertAlmostEqual(result[0], 0.0)
+
+    def test_with_nan(self) -> None:
+        """Test handling of NaN values."""
+        data = [[1, 2, np.nan, 1, 2, 1, 2, 1]]
+        result = longstring_pattern(data, na_rm=True)
+        self.assertEqual(len(result), 1)
+
+    def test_min_columns(self) -> None:
+        """Test minimum columns validation."""
+        data = [[1]]
+        with self.assertRaises(ValueError):
+            longstring_pattern(data)
+
+
+class TestMahadQQPlot(unittest.TestCase):
+    """Tests for Mahalanobis Q-Q plot function."""
+
+    def test_basic_functionality(self) -> None:
+        """Test basic Q-Q plot computation."""
+        rng = np.random.default_rng(42)
+        data = rng.normal(size=(30, 3))
+        theoretical, observed = mahad_qqplot(data)
+        self.assertEqual(len(theoretical), 30)
+        self.assertEqual(len(observed), 30)
+
+    def test_shapes_match(self) -> None:
+        """Test that output shapes match."""
+        rng = np.random.default_rng(42)
+        data = rng.normal(size=(20, 4))
+        theoretical, observed = mahad_qqplot(data)
+        self.assertEqual(theoretical.shape, observed.shape)
+
+    def test_sorted_ascending(self) -> None:
+        """Test that outputs are sorted in ascending order."""
+        rng = np.random.default_rng(42)
+        data = rng.normal(size=(25, 3))
+        theoretical, observed = mahad_qqplot(data)
+        np.testing.assert_array_equal(theoretical, np.sort(theoretical))
+        np.testing.assert_array_equal(observed, np.sort(observed))
+
+    def test_positive_theoretical_quantiles(self) -> None:
+        """Test that theoretical quantiles are positive."""
+        rng = np.random.default_rng(42)
+        data = rng.normal(size=(20, 3))
+        theoretical, _ = mahad_qqplot(data)
+        self.assertTrue(np.all(theoretical > 0))
+
+    def test_non_negative_observed(self) -> None:
+        """Test that observed squared distances are non-negative."""
+        rng = np.random.default_rng(42)
+        data = rng.normal(size=(20, 3))
+        _, observed = mahad_qqplot(data)
+        self.assertTrue(np.all(observed >= 0))
+
+    def test_plot_false(self) -> None:
+        """Test that plot=False returns without error."""
+        rng = np.random.default_rng(42)
+        data = rng.normal(size=(15, 3))
+        theoretical, observed = mahad_qqplot(data, plot=False)
+        self.assertIsInstance(theoretical, np.ndarray)
+        self.assertIsInstance(observed, np.ndarray)
+
+    def test_with_nan(self) -> None:
+        """Test Q-Q plot with na_rm=True and NaN values."""
+        rng = np.random.default_rng(42)
+        data = rng.normal(size=(20, 3))
+        data[0, 1] = np.nan
+        theoretical, observed = mahad_qqplot(data, na_rm=True)
+        self.assertEqual(len(theoretical), 19)
+
+    def test_insufficient_observations_raises(self) -> None:
+        """Test error for too few observations."""
+        data = [[1, 2, 3, 4, 5]]
+        with self.assertRaises(ValueError):
+            mahad_qqplot(data)
+
+
+class TestMarkov(unittest.TestCase):
+    """Tests for Markov chain transition entropy."""
+
+    def test_basic_functionality(self) -> None:
+        """Test basic Markov entropy computation."""
+        data = [[1, 2, 3, 4, 5], [1, 1, 1, 1, 1], [1, 2, 1, 2, 1]]
+        result = markov(data)
+        self.assertEqual(len(result), 3)
+
+    def test_constant_zero_entropy(self) -> None:
+        """Test that constant responses yield zero entropy."""
+        data = [[3, 3, 3, 3, 3, 3]]
+        result = markov(data)
+        self.assertAlmostEqual(result[0], 0.0)
+
+    def test_varied_greater_than_constant(self) -> None:
+        """Test that varied responses have higher entropy than constant."""
+        data = [
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [1, 2, 3, 1, 3, 2, 1, 3, 2, 1],
+        ]
+        result = markov(data)
+        self.assertGreater(result[1], result[0])
+
+    def test_seesaw_low_entropy(self) -> None:
+        """Test that seesaw pattern has lower entropy than varied."""
+        data = [
+            [1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+            [1, 2, 3, 1, 3, 2, 1, 3, 2, 1],
+        ]
+        result = markov(data)
+        self.assertLess(result[0], result[1])
+
+    def test_flag_function(self) -> None:
+        """Test Markov flagging."""
+        data = [[3, 3, 3, 3, 3], [1, 3, 5, 2, 4], [1, 2, 1, 2, 1]]
+        scores, flags = markov_flag(data, threshold=0.1)
+        self.assertEqual(len(flags), 3)
+        self.assertTrue(flags[0])
+
+    def test_summary_function(self) -> None:
+        """Test Markov summary."""
+        data = [[1, 2, 3, 4, 5], [3, 3, 3, 3, 3]]
+        summary = markov_summary(data)
+        self.assertIn("mean", summary)
+        self.assertIn("n_total", summary)
+
+    def test_with_nan(self) -> None:
+        """Test handling of NaN values."""
+        data = [[1, np.nan, 3, 4, 5], [1, 2, 3, 4, 5]]
+        result = markov(data, na_rm=True)
+        self.assertEqual(len(result), 2)
+        self.assertFalse(np.isnan(result[0]))
+
+    def test_min_columns_raises(self) -> None:
+        """Test that too few columns raises ValueError."""
+        data = [[1, 2], [3, 4]]
+        with self.assertRaises(ValueError):
+            markov(data)
+
+
+class TestResponseTimeMixture(unittest.TestCase):
+    """Tests for response time mixture model."""
+
+    def test_basic_functionality(self) -> None:
+        """Test basic mixture model computation."""
+        rng = np.random.default_rng(42)
+        fast = rng.uniform(0.3, 0.8, size=(10, 5))
+        slow = rng.uniform(3.0, 8.0, size=(10, 5))
+        times = np.vstack([fast, slow])
+        result = response_time_mixture(times, random_seed=42)
+        self.assertEqual(len(result), 20)
+
+    def test_fast_high_probability(self) -> None:
+        """Test that fast responders get high P(fast)."""
+        rng = np.random.default_rng(42)
+        fast = rng.uniform(0.1, 0.5, size=(15, 5))
+        slow = rng.uniform(5.0, 10.0, size=(15, 5))
+        times = np.vstack([fast, slow])
+        result = response_time_mixture(times, random_seed=42)
+        fast_mean = np.mean(result[:15])
+        slow_mean = np.mean(result[15:])
+        self.assertGreater(fast_mean, slow_mean)
+
+    def test_slow_low_probability(self) -> None:
+        """Test that slow responders get low P(fast)."""
+        rng = np.random.default_rng(42)
+        fast = rng.uniform(0.1, 0.5, size=(15, 5))
+        slow = rng.uniform(5.0, 10.0, size=(15, 5))
+        times = np.vstack([fast, slow])
+        result = response_time_mixture(times, random_seed=42)
+        slow_mean = np.mean(result[15:])
+        self.assertLess(slow_mean, 0.5)
+
+    def test_range_0_1(self) -> None:
+        """Test that all probabilities are in [0, 1]."""
+        rng = np.random.default_rng(42)
+        times = rng.uniform(0.5, 10.0, size=(20, 5))
+        result = response_time_mixture(times, random_seed=42)
+        valid = result[~np.isnan(result)]
+        self.assertTrue(np.all(valid >= 0.0))
+        self.assertTrue(np.all(valid <= 1.0))
+
+    def test_no_log_transform(self) -> None:
+        """Test without log transform."""
+        rng = np.random.default_rng(42)
+        times = rng.uniform(0.5, 10.0, size=(20, 5))
+        result = response_time_mixture(times, log_transform=False, random_seed=42)
+        self.assertEqual(len(result), 20)
+
+    def test_reproducibility(self) -> None:
+        """Test that same seed gives same results."""
+        rng = np.random.default_rng(42)
+        times = rng.uniform(0.5, 10.0, size=(20, 5))
+        r1 = response_time_mixture(times, random_seed=123)
+        r2 = response_time_mixture(times, random_seed=123)
+        np.testing.assert_array_almost_equal(r1, r2)
+
+    def test_insufficient_data_raises(self) -> None:
+        """Test that insufficient data raises ValueError."""
+        times = [[1.0, 2.0, 3.0]]
+        with self.assertRaises(ValueError):
+            response_time_mixture(times, n_components=2)
+
+    def test_with_nan(self) -> None:
+        """Test handling of NaN values in response times."""
+        rng = np.random.default_rng(42)
+        times = rng.uniform(0.5, 10.0, size=(20, 5))
+        times[0, :] = np.nan
+        result = response_time_mixture(times, random_seed=42)
+        self.assertTrue(np.isnan(result[0]))
+        self.assertFalse(np.isnan(result[1]))
+
+
+class TestOnset(unittest.TestCase):
+    """Tests for carelessness onset detection."""
+
+    def test_basic_functionality(self) -> None:
+        """Test basic onset detection."""
+        rng = np.random.default_rng(42)
+        data = rng.choice([1, 2, 3, 4, 5], size=(3, 30))
+        result = onset(data, window_size=5, min_items=10)
+        self.assertEqual(len(result), 3)
+
+    def test_attentive_then_careless(self) -> None:
+        """Test detection when switching from attentive to careless."""
+        rng = np.random.default_rng(42)
+        attentive = rng.choice([1, 2, 3, 4, 5], size=(1, 20))
+        careless = np.full((1, 20), 3)
+        data = np.hstack([attentive, careless])
+        result = onset(data, window_size=5, min_items=10)
+        self.assertEqual(len(result), 1)
+
+    def test_consistently_attentive(self) -> None:
+        """Test that consistently attentive respondent may not trigger."""
+        rng = np.random.default_rng(42)
+        data = rng.choice([1, 2, 3, 4, 5], size=(1, 40))
+        result = onset(data, window_size=5, min_items=10)
+        self.assertEqual(len(result), 1)
+
+    def test_flag_function(self) -> None:
+        """Test onset flagging."""
+        rng = np.random.default_rng(42)
+        attentive = rng.choice([1, 2, 3, 4, 5], size=(1, 20))
+        careless = np.full((1, 20), 3)
+        data = np.hstack([attentive, careless])
+        flags = onset_flag(data, window_size=5, min_items=10)
+        self.assertEqual(len(flags), 1)
+        self.assertTrue(np.issubdtype(flags.dtype, np.bool_))
+
+    def test_min_items(self) -> None:
+        """Test that short surveys return NaN."""
+        data = [[1, 2, 3, 4, 5]]
+        result = onset(data, window_size=3, min_items=10)
+        self.assertTrue(np.isnan(result[0]))
+
+    def test_with_nan(self) -> None:
+        """Test handling of NaN values."""
+        rng = np.random.default_rng(42)
+        data = rng.choice([1.0, 2.0, 3.0, 4.0, 5.0], size=(1, 30))
+        data[0, 5] = np.nan
+        result = onset(data, window_size=5, min_items=10, na_rm=True)
+        self.assertEqual(len(result), 1)
+
+
+class TestCompositeProbability(unittest.TestCase):
+    """Tests for composite_probability function."""
+
+    def test_basic_functionality(self) -> None:
+        """Test basic probability computation."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        result = composite_probability(data)
+        self.assertEqual(len(result), 3)
+
+    def test_range_0_1(self) -> None:
+        """Test that probabilities are in [0, 1]."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        result = composite_probability(data)
+        valid = result[~np.isnan(result)]
+        self.assertTrue(np.all(valid >= 0.0))
+        self.assertTrue(np.all(valid <= 1.0))
+
+    def test_high_composite_high_probability(self) -> None:
+        """Test that high composite scores map to high probabilities."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        probs = composite_probability(data)
+        scores = composite(data)
+        max_idx = int(np.argmax(scores))
+        self.assertEqual(int(np.argmax(probs)), max_idx)
+
+    def test_low_composite_low_probability(self) -> None:
+        """Test that low composite scores map to low probabilities."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        probs = composite_probability(data)
+        scores = composite(data)
+        min_idx = int(np.argmin(scores))
+        self.assertEqual(int(np.argmin(probs)), min_idx)
+
+    def test_specific_indices(self) -> None:
+        """Test with specific indices."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+        ]
+        result = composite_probability(data, indices=["irv", "longstring"])
+        self.assertEqual(len(result), 2)
+
+
+class TestCompositeBestSubset(unittest.TestCase):
+    """Tests for composite best_subset method."""
+
+    def test_works(self) -> None:
+        """Test that best_subset method works."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        result = composite(data, method="best_subset")
+        self.assertEqual(len(result), 3)
+
+    def test_overrides_indices(self) -> None:
+        """Test that best_subset overrides user-specified indices."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        result = composite(data, method="best_subset", indices=["mahad"])
+        self.assertEqual(len(result), 3)
+
+    def test_with_mad(self) -> None:
+        """Test best_subset with MAD item info provided."""
+        data = [
+            [5, 1, 5, 1, 5, 1, 5, 1, 5, 1],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        result = composite(
+            data,
+            method="best_subset",
+            mad_positive_items=[0, 2, 4, 6, 8],
+            mad_negative_items=[1, 3, 5, 7, 9],
+            mad_scale_max=5,
+        )
+        self.assertEqual(len(result), 3)
+
+    def test_without_mad(self) -> None:
+        """Test best_subset without MAD falls back to irv/longstring/lz."""
+        data = [
+            [1, 2, 3, 4, 5, 4, 3, 2, 1, 2],
+            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [5, 4, 3, 2, 1, 2, 3, 4, 5, 4],
+        ]
+        result = composite(data, method="best_subset")
+        summary = composite_summary(data, method="best_subset")
+        self.assertNotIn("mad", summary["indices_used"])
+        self.assertEqual(len(result), 3)
 
 
 if __name__ == "__main__":
