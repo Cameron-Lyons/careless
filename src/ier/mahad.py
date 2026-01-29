@@ -266,7 +266,7 @@ def mahad_qqplot(
 
     if plot:
         try:
-            import matplotlib.pyplot as plt  # type: ignore[import-not-found]
+            import matplotlib.pyplot as plt
         except ImportError as exc:
             raise RuntimeError(
                 "matplotlib is required for plotting. "
